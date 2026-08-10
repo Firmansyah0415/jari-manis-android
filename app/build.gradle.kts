@@ -76,4 +76,9 @@ dependencies {
 
     // 6. COMPOSE MATERIAL ICONS (Untuk icon di Bottom Navigation)
     implementation(libs.androidx.compose.material.icons.extended)
+
+    // YouTube Player by Pierfrancesco Soffritti
+    implementation(libs.core)
+
+    implementation(libs.androidx.material3)
 }

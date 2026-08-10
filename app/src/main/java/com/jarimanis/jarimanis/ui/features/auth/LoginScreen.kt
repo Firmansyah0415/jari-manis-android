@@ -2,6 +2,11 @@ package com.jarimanis.jarimanis.ui.features.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -9,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jarimanis.jarimanis.ui.components.JariManisTextField
@@ -24,6 +30,9 @@ fun LoginScreen(
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // State untuk Icon Mata (Password)
+    var passwordVisible by remember { mutableStateOf(false) }
 
     // Efek Navigasi jika sukses
     LaunchedEffect(uiState) {
@@ -41,7 +50,9 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .imePadding() // 1. URUTAN PENTING: imePadding dipanggil SEBELUM verticalScroll
+                .verticalScroll(rememberScrollState()) // 2. Bikin layar bisa di-scroll
+                .padding(24.dp), // 3. Jarak aman di pinggir
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -63,7 +74,7 @@ fun LoginScreen(
             // Card putih yang menonjol
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = Shapes.large, // Ultra-rounded dari Shape.kt
+                shape = Shapes.large,
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
@@ -79,11 +90,21 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    JariManisTextField(
+                    // INPUT PASSWORD (DENGAN MATA & SINGLE LINE)
+                    OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = "Password",
-                        visualTransformation = PasswordVisualTransformation()
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true, // Mencegah dienter / turun ke baris baru
+                        shape = Shapes.medium,
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(imageVector = image, contentDescription = "Tampilkan Password")
+                            }
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -101,8 +122,8 @@ fun LoginScreen(
                         onClick = { viewModel.login(username, password) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp), // Tombol besar
-                        shape = Shapes.medium, // Pill shape
+                            .height(56.dp),
+                        shape = Shapes.medium,
                         enabled = uiState !is AuthUiState.Loading,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
@@ -127,7 +148,7 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable {
-                        viewModel.resetState() // Reset error sebelum pindah halaman
+                        viewModel.resetState()
                         onNavigateToRegister()
                     }
                 )

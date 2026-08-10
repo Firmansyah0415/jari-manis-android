@@ -12,10 +12,10 @@ object ApiClient {
     // Jika Anda memakai HP asli via kabel data, ganti dengan IP Address Wi-Fi laptop Anda (misal: "http://192.168.1.10:8000").
 
     // Ngriok
-     private const val BASE_URL = "https://diego-beaky-unappeasably.ngrok-free.dev"
+//     private const val BASE_URL = "https://diego-beaky-unappeasably.ngrok-free.dev"
 
     // Lokal tanpa Ngrok
-    // private const val BASE_URL = "http://10.0.2.2:3000/"
+     const val BASE_URL = "http://172.24.93.129:8000/"
 
     // Interceptor untuk memantau lalu lintas jaringan di Logcat
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -41,5 +41,10 @@ object ApiClient {
     // Fungsi untuk memudahkan pemanggilan AuthApi
     val authApi: AuthApi by lazy {
         retrofit.create(AuthApi::class.java)
+    }
+
+    // TAMBAHKAN INI:
+    val zonaApi: ZonaApi by lazy {
+        retrofit.create(ZonaApi::class.java)
     }
 }
