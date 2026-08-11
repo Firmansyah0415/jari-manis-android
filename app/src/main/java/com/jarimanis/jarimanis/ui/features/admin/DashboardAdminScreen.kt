@@ -359,9 +359,7 @@ fun DashboardAdminScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             StatCard("Total\nSiswa", "${data.statistik.totalSiswa}", Color(0xFF2196F3), Modifier.weight(1f))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            StatCard("Total\nGuru", "${data.statistik.totalGuru}", Color(0xFFFF9800), Modifier.weight(1f))
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
                             StatCard("Rata-Rata\nSkor", "${data.statistik.rataRataSkor}", Color(0xFF4CAF50), Modifier.weight(1f))
                         }
                         Spacer(modifier = Modifier.height(16.dp))

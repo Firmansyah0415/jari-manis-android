@@ -24,6 +24,7 @@ import com.jarimanis.jarimanis.data.model.UserProfile
 import com.jarimanis.jarimanis.data.network.ApiClient
 import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel
 import com.jarimanis.jarimanis.utils.Resource
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +36,7 @@ fun DaftarUserScreen(
     val sekolahList by viewModel.sekolahList.collectAsState()
     val kelasList by viewModel.kelasList.collectAsState()
 
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
     val roles = listOf("siswa", "guru")
 
     var selectedSekolahId by remember { mutableStateOf<Int?>(null) }
@@ -51,6 +52,8 @@ fun DaftarUserScreen(
         viewModel.fetchAdminUsers(token, role = roles[selectedTabIndex], sekolahId = selectedSekolahId, kelasId = selectedKelasId)
     }
 
+    val offWhiteBackground = Color(0xFFF8F9FA)
+
     LaunchedEffect(selectedTabIndex) {
         refreshData()
     }
@@ -58,95 +61,107 @@ fun DaftarUserScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Manajemen User", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary, titleContentColor = Color.White)
+                title = {
+                    Column { Text("Manajemen User", fontWeight = FontWeight.Bold, fontSize = 20.sp) }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = offWhiteBackground)
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = offWhiteBackground
     ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
 
-            // --- TAB ROW (SISWA / GURU) ---
-            TabRow(selectedTabIndex = selectedTabIndex, containerColor = Color.White) {
-                Tab(
-                    selected = selectedTabIndex == 0,
-                    onClick = { selectedTabIndex = 0 },
-                    text = { Text("Daftar Siswa", fontWeight = FontWeight.Bold) }
-                )
-                Tab(
-                    selected = selectedTabIndex == 1,
-                    onClick = { selectedTabIndex = 1 },
-                    text = { Text("Daftar Guru", fontWeight = FontWeight.Bold) }
-                )
+        // --- PERBAIKAN SCROLL: Menggunakan LazyColumn sebagai Root ---
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            item {
+                // --- TAB ROW (SISWA / GURU) MATERIAL 3 TERBARU ---
+                SecondaryTabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    containerColor = Color.White
+                ) {
+                    Tab(
+                        selected = selectedTabIndex == 0,
+                        onClick = { selectedTabIndex = 0 },
+                        text = { Text("Daftar Siswa", fontWeight = FontWeight.Bold) }
+                    )
+                    Tab(
+                        selected = selectedTabIndex == 1,
+                        onClick = { selectedTabIndex = 1 },
+                        text = { Text("Daftar Guru", fontWeight = FontWeight.Bold) }
+                    )
+                }
             }
 
-            // === FILTER DROPDOWN MATERIAL 3 ===
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(2.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.FilterAlt, contentDescription = "Filter", tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Filter Pencarian", fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
+            item {
+                // === FILTER DROPDOWN MATERIAL 3 ===
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.FilterAlt, contentDescription = "Filter", tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Filter Pencarian", fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // DROPDOWN SEKOLAH
-                        ExposedDropdownMenuBox(
-                            expanded = expandedSekolah,
-                            onExpandedChange = { expandedSekolah = !expandedSekolah },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            OutlinedTextField(
-                                value = selectedSekolahName,
-                                onValueChange = {}, readOnly = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedSekolah) },
-                                modifier = Modifier.menuAnchor(),
-                                textStyle = LocalTextStyle.current.copy(fontSize = 12.sp), singleLine = true
-                            )
-                            ExposedDropdownMenu(expanded = expandedSekolah, onDismissRequest = { expandedSekolah = false }) {
-                                DropdownMenuItem(text = { Text("Semua Sekolah", fontSize = 14.sp) }, onClick = {
-                                    selectedSekolahId = null; selectedSekolahName = "Semua Sekolah"
-                                    selectedKelasId = null; selectedKelasName = "Semua Kelas"
-                                    expandedSekolah = false; refreshData()
-                                })
-                                sekolahList.forEach { sekolah ->
-                                    DropdownMenuItem(text = { Text(sekolah.nama, fontSize = 14.sp) }, onClick = {
-                                        selectedSekolahId = sekolah.id; selectedSekolahName = sekolah.nama
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // DROPDOWN SEKOLAH
+                            ExposedDropdownMenuBox(
+                                expanded = expandedSekolah,
+                                onExpandedChange = { expandedSekolah = !expandedSekolah },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                OutlinedTextField(
+                                    value = selectedSekolahName,
+                                    onValueChange = {}, readOnly = true,
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedSekolah) },
+                                    modifier = Modifier.menuAnchor(),
+                                    textStyle = LocalTextStyle.current.copy(fontSize = 12.sp), singleLine = true
+                                )
+                                ExposedDropdownMenu(expanded = expandedSekolah, onDismissRequest = { expandedSekolah = false }) {
+                                    DropdownMenuItem(text = { Text("Semua Sekolah", fontSize = 14.sp) }, onClick = {
+                                        selectedSekolahId = null; selectedSekolahName = "Semua Sekolah"
                                         selectedKelasId = null; selectedKelasName = "Semua Kelas"
-                                        expandedSekolah = false; viewModel.fetchKelas(sekolah.id); refreshData()
+                                        expandedSekolah = false; refreshData()
                                     })
+                                    sekolahList.forEach { sekolah ->
+                                        DropdownMenuItem(text = { Text(sekolah.nama, fontSize = 14.sp) }, onClick = {
+                                            selectedSekolahId = sekolah.id; selectedSekolahName = sekolah.nama
+                                            selectedKelasId = null; selectedKelasName = "Semua Kelas"
+                                            expandedSekolah = false; viewModel.fetchKelas(sekolah.id); refreshData()
+                                        })
+                                    }
                                 }
                             }
-                        }
 
-                        // DROPDOWN KELAS
-                        ExposedDropdownMenuBox(
-                            expanded = expandedKelas,
-                            onExpandedChange = { if (selectedSekolahId != null) expandedKelas = !expandedKelas },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            OutlinedTextField(
-                                value = selectedKelasName,
-                                onValueChange = {}, readOnly = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKelas) },
-                                modifier = Modifier.menuAnchor(),
-                                textStyle = LocalTextStyle.current.copy(fontSize = 12.sp), enabled = selectedSekolahId != null, singleLine = true
-                            )
-                            ExposedDropdownMenu(expanded = expandedKelas, onDismissRequest = { expandedKelas = false }) {
-                                DropdownMenuItem(text = { Text("Semua Kelas", fontSize = 14.sp) }, onClick = {
-                                    selectedKelasId = null; selectedKelasName = "Semua Kelas"
-                                    expandedKelas = false; refreshData()
-                                })
-                                kelasList.forEach { kelas ->
-                                    DropdownMenuItem(text = { Text(kelas.nama_kelas, fontSize = 14.sp) }, onClick = {
-                                        selectedKelasId = kelas.id; selectedKelasName = kelas.nama_kelas
+                            // DROPDOWN KELAS
+                            ExposedDropdownMenuBox(
+                                expanded = expandedKelas,
+                                onExpandedChange = { if (selectedSekolahId != null) expandedKelas = !expandedKelas },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                OutlinedTextField(
+                                    value = selectedKelasName,
+                                    onValueChange = {}, readOnly = true,
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKelas) },
+                                    modifier = Modifier.menuAnchor(),
+                                    textStyle = LocalTextStyle.current.copy(fontSize = 12.sp), enabled = selectedSekolahId != null, singleLine = true
+                                )
+                                ExposedDropdownMenu(expanded = expandedKelas, onDismissRequest = { expandedKelas = false }) {
+                                    DropdownMenuItem(text = { Text("Semua Kelas", fontSize = 14.sp) }, onClick = {
+                                        selectedKelasId = null; selectedKelasName = "Semua Kelas"
                                         expandedKelas = false; refreshData()
                                     })
+                                    kelasList.forEach { kelas ->
+                                        DropdownMenuItem(text = { Text(kelas.nama_kelas, fontSize = 14.sp) }, onClick = {
+                                            selectedKelasId = kelas.id; selectedKelasName = kelas.nama_kelas
+                                            expandedKelas = false; refreshData()
+                                        })
+                                    }
                                 }
                             }
                         }
@@ -154,18 +169,36 @@ fun DaftarUserScreen(
                 }
             }
 
-            // === LIST USER ===
+            // === LIST USER & STATISTIK JUMLAH ===
             when (val state = userListState) {
-                is Resource.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-                is Resource.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(state.message, color = Color.Red) }
+                is Resource.Loading -> {
+                    item { Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
+                }
+                is Resource.Error -> {
+                    item { Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) { Text(state.message, color = Color.Red) } }
+                }
                 is Resource.Success -> {
                     val users = state.data.data
+
+                    item {
+                        // --- MENAMPILKAN STATISTIK TOTAL USER DI SINI ---
+                        val roleName = roles[selectedTabIndex].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+                        Text(
+                            text = "Total $roleName: ${users.size} Akun",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+
                     if (users.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Belum ada data ${roles[selectedTabIndex]}", color = Color.Gray) }
+                        item { Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) { Text("Belum ada data ${roles[selectedTabIndex]}", color = Color.Gray) } }
                     } else {
-                        LazyColumn(contentPadding = PaddingValues(16.dp)) {
-                            items(users) { user -> UserItemCard(user) }
+                        // Looping item langsung di dalam LazyColumn Root
+                        items(users) { user ->
+                            UserItemCard(user = user, modifier = Modifier.padding(horizontal = 16.dp))
                         }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
                     }
                 }
                 else -> {}
@@ -175,9 +208,9 @@ fun DaftarUserScreen(
 }
 
 @Composable
-fun UserItemCard(user: UserProfile) {
+fun UserItemCard(user: UserProfile, modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(bottom = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
