@@ -1,4 +1,4 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*

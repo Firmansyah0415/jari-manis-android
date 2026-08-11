@@ -1,4 +1,4 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import android.app.DatePickerDialog
 import android.widget.Toast

@@ -4,6 +4,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- 1. TAMBAHKAN 2 BARIS IZIN INI -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
     <!-- configChanges DIHAPUS DARI SINI -->
     <application
         android:allowBackup="true"

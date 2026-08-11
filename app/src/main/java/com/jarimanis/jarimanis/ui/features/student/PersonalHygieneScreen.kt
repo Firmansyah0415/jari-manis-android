@@ -1,17 +1,14 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import android.app.DatePickerDialog
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,36 +19,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.jarimanis.jarimanis.data.network.PersonalHygieneRequest
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-// Struktur Data untuk Kategori Makan
-data class MealCategory(
-    val title: String,
-    val items: List<String>
-)
+data class HygieneItem(val key: String, val label: String)
 
-val recallMeals = listOf(
-    MealCategory("Makan Pagi", listOf("Makanan Pokok (misal: nasi, roti)", "Lauk Hewani (misal: ikan goreng)", "Lauk Nabati (misal: tempe)", "Sayuran (misal: tumis kangkung)", "Buah-Buahan (misal: jeruk)", "Minuman (misal: air putih)")),
-    MealCategory("Selingan Pagi", listOf("Snack (misal: biskuit, kue)")),
-    MealCategory("Makan Siang", listOf("Makanan Pokok (misal: nasi, roti)", "Lauk Hewani (misal: ikan goreng)", "Lauk Nabati (misal: tempe)", "Sayuran (misal: tumis kangkung)", "Buah-Buahan (misal: jeruk)", "Minuman (misal: air putih)")),
-    MealCategory("Selingan Sore", listOf("Snack (misal: biskuit, kue)")),
-    MealCategory("Makan Malam", listOf("Makanan Pokok (misal: nasi, roti)", "Lauk Hewani (misal: ikan goreng)", "Lauk Nabati (misal: tempe)", "Sayuran (misal: tumis kangkung)", "Buah-Buahan (misal: jeruk)", "Minuman (misal: air putih)"))
+val hygieneChecklist = listOf(
+    HygieneItem("mandi", "Mandi minimal 2 kali sehari"),
+    HygieneItem("sabun", "Menggunakan sabun saat mandi"),
+    HygieneItem("gigi_pagi", "Menyikat gigi setelah sarapan"),
+    HygieneItem("gigi_malam", "Menyikat gigi sebelum tidur"),
+    HygieneItem("tangan_makan", "Mencuci tangan pakai sabun sebelum makan"),
+    HygieneItem("tangan_bab", "Mencuci tangan pakai sabun setelah BAB/BAK"),
+    HygieneItem("alas_kaki", "Menggunakan alas kaki saat keluar rumah"),
+    HygieneItem("pakaian", "Mengganti pakaian setiap hari dengan yang bersih"),
+    HygieneItem("handuk", "Menggunakan handuk pribadi yang bersih"),
+    HygieneItem("tangan_luar", "Mencuci tangan setelah bepergian dari luar")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecallMakananScreen(
+fun PersonalHygieneScreen(
     navController: NavController,
     viewModel: ZonaViewModel,
     token: String
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-
     val checkedItems = remember { mutableStateMapOf<String, Boolean>() }
-    var expandedCategory by remember { mutableStateOf<String?>(null) }
 
     // --- STATE TANGGAL ---
     val calendar = Calendar.getInstance()
@@ -87,7 +84,7 @@ fun RecallMakananScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Zona 1: Recall 24 Jam", fontWeight = FontWeight.Bold) }, colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard))
+            TopAppBar(title = { Text("Zona 4: Personal Hygiene", fontWeight = FontWeight.Bold) }, colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard))
         },
         containerColor = offWhiteBackground
     ) { paddingValues ->
@@ -98,7 +95,7 @@ fun RecallMakananScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    Text("Pilih tanggal dan centang makanan yang kamu konsumsi.", color = Color.Gray, fontSize = 14.sp)
+                    Text("Pilih tanggal dan centang aktivitas kebersihan dirimu.", color = Color.Gray, fontSize = 14.sp)
                 }
 
                 // --- PEMILIH TANGGAL ---
@@ -117,32 +114,26 @@ fun RecallMakananScreen(
                     }
                 }
 
-                items(recallMeals) { category ->
-                    val isExpanded = expandedCategory == category.title
+                item {
                     Card(
-                        onClick = { expandedCategory = if (isExpanded) null else category.title },
                         colors = CardDefaults.cardColors(containerColor = pureWhiteCard),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = category.title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                                Icon(imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, contentDescription = "Expand", tint = Color.Gray)
-                            }
-                            AnimatedVisibility(visible = isExpanded) {
-                                Column(modifier = Modifier.padding(top = 12.dp)) {
-                                    Divider(color = offWhiteBackground, thickness = 1.dp)
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    category.items.forEach { foodItem ->
-                                        val stateKey = "${category.title}_$foodItem"
-                                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                            Checkbox(checked = checkedItems[stateKey] == true, onCheckedChange = { checkedItems[stateKey] = it })
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(text = foodItem, fontSize = 14.sp, color = Color.DarkGray)
-                                        }
-                                    }
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                            hygieneChecklist.forEach { item ->
+                                val isChecked = checkedItems[item.key] ?: false
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().clickable { checkedItems[item.key] = !isChecked }.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(checked = isChecked, onCheckedChange = { checked -> checkedItems[item.key] = checked })
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(text = item.label, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
+                                }
+                                if (item != hygieneChecklist.last()) {
+                                    Divider(color = offWhiteBackground, thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
                                 }
                             }
                         }
@@ -150,25 +141,30 @@ fun RecallMakananScreen(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            val skorTotal = checkedItems.values.count { it } * 5
-                            val detailJawabanMap = checkedItems.filterValues { it }.keys.associateWith { 5 }
-
-                            viewModel.submitRecallMakanan(
-                                token = token,
+                            val request = PersonalHygieneRequest(
                                 tanggal = apiDateFormat.format(selectedDate), // Menggunakan tanggal pilihan
-                                skorTotal = skorTotal,
-                                detailJawaban = detailJawabanMap
+                                mandi2xSehari = checkedItems["mandi"] ?: false,
+                                pakaiSabun = checkedItems["sabun"] ?: false,
+                                sikatGigiPagi = checkedItems["gigi_pagi"] ?: false,
+                                sikatGigiMalam = checkedItems["gigi_malam"] ?: false,
+                                cuciTanganSebelumMakan = checkedItems["tangan_makan"] ?: false,
+                                cuciTanganSetelahBab = checkedItems["tangan_bab"] ?: false,
+                                pakaiAlasKaki = checkedItems["alas_kaki"] ?: false,
+                                pakaiPakaianBersih = checkedItems["pakaian"] ?: false,
+                                handukPribadiBersih = checkedItems["handuk"] ?: false,
+                                cuciTanganLuarRumah = checkedItems["tangan_luar"] ?: false
                             )
+                            viewModel.submitPersonalHygiene(token, request)
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(8.dp),
                         enabled = !uiState.isLoading
                     ) {
                         if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                        else Text("Simpan Aktivitas Makan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        else Text("Simpan Personal Hygiene", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(32.dp))
                 }

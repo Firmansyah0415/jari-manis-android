@@ -172,13 +172,13 @@ fun DetailRaporSiswaScreen(
                             text = "$selesaiHarian dari 4 Zona Selesai",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.secondaryContainer
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         LinearProgressIndicator(
                             progress = { progress },
                             modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)),
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             trackColor = Color.White
                         )
                     }

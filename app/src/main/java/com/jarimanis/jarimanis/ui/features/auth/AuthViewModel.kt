@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jarimanis.jarimanis.data.local.SessionManager
+import com.jarimanis.jarimanis.data.model.AdminDashboardResponse
 import com.jarimanis.jarimanis.data.model.LoginRequest
 import com.jarimanis.jarimanis.data.model.RaporResponse
 import com.jarimanis.jarimanis.data.model.RegisterRequest
+import com.jarimanis.jarimanis.data.model.UserListResponse
 import com.jarimanis.jarimanis.data.model.UserProfile
 import com.jarimanis.jarimanis.data.repository.AuthRepository
 import com.jarimanis.jarimanis.utils.Resource
@@ -174,6 +176,7 @@ class AuthViewModel(
     fun updateProfile(
         token: String,
         name: String,
+        username: String,
         password: String?,
         gender: String,
         sekolahId: Int?,
@@ -190,6 +193,7 @@ class AuthViewModel(
 
         viewModelScope.launch {
             val nameBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
+            val usernameBody = username.toRequestBody("text/plain".toMediaTypeOrNull())
             val passwordBody = if (!password.isNullOrBlank()) password.toRequestBody("text/plain".toMediaTypeOrNull()) else null
 
             // Konversi 3 data baru ke RequestBody
@@ -207,7 +211,7 @@ class AuthViewModel(
             }
 
             // Panggil Repository dengan urutan yang sesuai
-            when (val result = repository.updateProfile(token, nameBody, passwordBody, genderBody, sekolahBody, kelasBody, fotoPart)) {
+            when (val result = repository.updateProfile(token, nameBody, usernameBody, passwordBody, genderBody, sekolahBody,kelasBody, fotoPart)) {
                 is Resource.Success -> {
                     _userProfile.value = result.data.user
                     _uiState.value = AuthUiState.Success(result.data.user.role, "Profil berhasil diperbarui")
@@ -254,6 +258,28 @@ class AuthViewModel(
                 is Resource.Error -> { /* Tangani error jika perlu */ }
                 else -> {}
             }
+        }
+    }
+
+    // --- STATE UNTUK DASHBOARD ADMIN ---
+    private val _adminDashboardState = MutableStateFlow<Resource<AdminDashboardResponse>?>(null)
+    val adminDashboardState: StateFlow<Resource<AdminDashboardResponse>?> = _adminDashboardState.asStateFlow()
+
+    fun fetchAdminDashboard(token: String, sekolahId: Int? = null, kelasId: Int? = null) {
+        _adminDashboardState.value = Resource.Loading
+        viewModelScope.launch {
+            _adminDashboardState.value = repository.getAdminDashboard(token, sekolahId, kelasId)
+        }
+    }
+
+    // --- STATE UNTUK DAFTAR USER ADMIN ---
+    private val _adminUserList = MutableStateFlow<Resource<UserListResponse>?>(null)
+    val adminUserList: StateFlow<Resource<UserListResponse>?> = _adminUserList.asStateFlow()
+
+    fun fetchAdminUsers(token: String, role: String = "siswa", sekolahId: Int? = null, kelasId: Int? = null) {
+        _adminUserList.value = Resource.Loading
+        viewModelScope.launch {
+            _adminUserList.value = repository.getAdminUsers(token, role, sekolahId, kelasId)
         }
     }
 

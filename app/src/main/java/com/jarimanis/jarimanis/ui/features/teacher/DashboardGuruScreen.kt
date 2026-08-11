@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox // <-- IMPORT API TERBARU
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,12 +22,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.jarimanis.jarimanis.data.model.UserProfile
 import com.jarimanis.jarimanis.data.network.ApiClient
 import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,12 +41,11 @@ fun DashboardGuruScreen(
 ) {
     val siswaList by viewModel.siswaList.collectAsState()
     val isLoading by viewModel.isSiswaLoading.collectAsState()
+    val userProfile by viewModel.userProfile.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     var selectedKelasId by remember { mutableStateOf<Int?>(null) }
     var expandedDropdown by remember { mutableStateOf(false) }
-
-    // --- STATE PULL TO REFRESH (Versi 1.3.0+) ---
     var isRefreshing by remember { mutableStateOf(false) }
 
     val daftarKelasTersedia = remember(siswaList) {
@@ -55,32 +56,49 @@ fun DashboardGuruScreen(
         if (selectedKelasId == null) siswaList else siswaList.filter { it.kelas?.id == selectedKelasId }
     }
 
+    // --- LOGIKA WAKTU UNTUK GREETING ---
+    val calendar = Calendar.getInstance()
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    val greeting = when (hour) {
+        in 0..11 -> "Selamat Pagi"
+        in 12..14 -> "Selamat Siang"
+        in 15..17 -> "Selamat Sore"
+        else -> "Selamat Malam"
+    }
+
+    val offWhiteBackground = Color(0xFFF8F9FA)
+
     LaunchedEffect(Unit) {
         if (token.isNotEmpty()) {
             viewModel.fetchSiswaList(token)
+            viewModel.fetchProfile(token)
         }
     }
 
+    // GANTI BLOK SCAFFOLD MENJADI INI
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Leaderboard", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
+                title = {
+                    Column {
+                        Text("Dashboard Guru", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("Halo ${userProfile?.name ?: "Guru"}, $greeting", fontSize = 14.sp, color = Color.Gray)
+                    }
+                },
+                // Menggunakan warna offWhite persis seperti dashboard siswa
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = offWhiteBackground)
             )
-        }
+        },
+        containerColor = offWhiteBackground
     ) { paddingValues ->
 
-        // --- PENGGUNAAN API BARU PullToRefreshBox ---
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
                 coroutineScope.launch {
                     isRefreshing = true
-                    viewModel.fetchSiswaList(token) // Tarik ulang data Leaderboard dari API
-                    delay(1000.milliseconds) // Animasi loading berputar minimal 1 detik
+                    viewModel.fetchSiswaList(token)
+                    delay(1000.milliseconds)
                     isRefreshing = false
                 }
             },
@@ -90,6 +108,8 @@ fun DashboardGuruScreen(
                 .padding(paddingValues)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
+
+                // KOTAK BIRU GREETING LAMA SUDAH DIHAPUS DI SINI
 
                 // --- UI DROPDOWN FILTER KELAS ---
                 if (siswaList.isNotEmpty()) {
@@ -147,10 +167,6 @@ fun DashboardGuruScreen(
         }
     }
 }
-
-// ===============================================
-// KOMPONEN-KOMPONEN LEADERBOARD (TIDAK ADA PERUBAHAN)
-// ===============================================
 
 @Composable
 fun LeaderboardContent(siswaList: List<UserProfile>, onSiswaClick: (Int) -> Unit) {

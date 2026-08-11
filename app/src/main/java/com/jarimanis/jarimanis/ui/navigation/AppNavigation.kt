@@ -11,15 +11,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jarimanis.jarimanis.data.local.SessionManager
+import com.jarimanis.jarimanis.ui.features.admin.DashboardAdminScreen
 import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel
 import com.jarimanis.jarimanis.ui.features.auth.LoginScreen
 import com.jarimanis.jarimanis.ui.features.auth.RegisterScreen
-import com.jarimanis.jarimanis.ui.features.dashboard.*
+import com.jarimanis.jarimanis.ui.features.student.*
 import com.jarimanis.jarimanis.ui.features.main.BottomNavItem
 // Ganti / pastikan path import ini sesuai dengan lokasi file MainScreen Anda
 import com.jarimanis.jarimanis.ui.features.main.MainScreen
 import com.jarimanis.jarimanis.ui.features.profil.EditProfileScreen
-import com.jarimanis.jarimanis.ui.features.rapor.RaporScreen
+import com.jarimanis.jarimanis.ui.features.student.RaporScreen
 import com.jarimanis.jarimanis.ui.features.teacher.DetailRaporSiswaScreen
 import kotlinx.coroutines.launch
 
@@ -41,10 +42,10 @@ fun AppNavigation(
     // 2. Logika Gerbang Utama (Start Destination)
     val startDestination = if (token == null) {
         "login"
-    } else if (role == "guru") {
-        "main_route" // Ganti ke main_route
+    } else if (role == "guru" || role == "admin") { // <--- TAMBAHKAN ROLE ADMIN DI SINI
+        "main_route"
     } else {
-        if (isPretestDone) "main_route" else "pre_test_route" // Ganti ke main_route
+        if (isPretestDone) "main_route" else "pre_test_route"
     }
 
     val coroutineScope = rememberCoroutineScope()
@@ -60,7 +61,7 @@ fun AppNavigation(
                 viewModel = authViewModel,
                 onNavigateToRegister = { navController.navigate("register") },
                 onLoginSuccess = {
-                    val destination = if (role == "guru") {
+                    val destination = if (role == "guru" || role == "admin") { // <--- TAMBAHKAN ROLE ADMIN DI SINI
                         "main_route"
                     } else {
                         if (isPretestDone) "main_route" else "pre_test_route"
@@ -145,6 +146,17 @@ fun AppNavigation(
 
                         onRefreshRequest = {
                             if (!token.isNullOrEmpty()) authViewModel.fetchProfile(token!!)
+                        }
+                    )
+                },
+                // --- TAMBAHKAN BLOK ADMIN INI ---
+                dashboardAdminContent = {
+                    DashboardAdminScreen(
+                        viewModel = authViewModel,
+                        token = token ?: "",
+                        // Arahkan klik ke halaman Rapor Detail!
+                        onSiswaClick = { id ->
+                            navController.navigate("detail_rapor_siswa/$id")
                         }
                     )
                 }

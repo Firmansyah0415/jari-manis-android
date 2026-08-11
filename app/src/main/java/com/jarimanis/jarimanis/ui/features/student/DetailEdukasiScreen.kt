@@ -1,10 +1,9 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable

@@ -1,4 +1,4 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

@@ -3,6 +3,7 @@ package com.jarimanis.jarimanis.ui.features.main
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -15,14 +16,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel // TAMBAHAN IMPORT
-import com.jarimanis.jarimanis.ui.features.dashboard.ZonaViewModel
+import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel
+import com.jarimanis.jarimanis.ui.features.student.ZonaViewModel
 import com.jarimanis.jarimanis.ui.features.profil.ProfileScreen
-import com.jarimanis.jarimanis.ui.features.rapor.RaporScreen
+import com.jarimanis.jarimanis.ui.features.student.RaporScreen
 import com.jarimanis.jarimanis.ui.features.teacher.DashboardGuruScreen
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
     object Home : BottomNavItem("home", "Home", Icons.Filled.Home)
+    object Users : BottomNavItem("users", "Users", Icons.Filled.People)
     object Rapor : BottomNavItem("rapor", "Rapor", Icons.Filled.Star)
     object Profil : BottomNavItem("profil", "Profil", Icons.Filled.Person)
 }
@@ -31,22 +33,30 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
 fun MainScreen(
     role: String,
     token: String,
-    authViewModel: AuthViewModel, // 1. TAMBAHKAN PARAMETER INI
+    authViewModel: AuthViewModel,
     zonaViewModel: ZonaViewModel,
     onLogoutClick: () -> Unit,
     onNavigateToEditProfil: () -> Unit,
     onNavigateToTentang: () -> Unit,
     onNavigateToDetailSiswa: (Int) -> Unit,
-    dashboardSiswaContent: @Composable () -> Unit
+    dashboardSiswaContent: @Composable () -> Unit,
+    dashboardAdminContent: @Composable () -> Unit // <--- 1. TAMBAHAN PARAMETER ADMIN
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val items = if (role == "guru") {
-        listOf(BottomNavItem.Home, BottomNavItem.Profil)
-    } else {
-        listOf(BottomNavItem.Home, BottomNavItem.Rapor, BottomNavItem.Profil)
+    // --- 2. FILTER BOTTOM NAVIGATION BERDASARKAN ROLE ---
+    val items = when (role) {
+        "admin" -> {
+            listOf(BottomNavItem.Home, BottomNavItem.Users, BottomNavItem.Profil) // Admin punya 3 menu
+        }
+        "guru" -> {
+            listOf(BottomNavItem.Home, BottomNavItem.Profil) // Guru punya 2 menu
+        }
+        else -> {
+            listOf(BottomNavItem.Home, BottomNavItem.Rapor, BottomNavItem.Profil) // Siswa punya 3 menu
+        }
     }
 
     Scaffold(
@@ -81,21 +91,34 @@ fun MainScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Home.route) {
-                if (role == "guru") {
-                    DashboardGuruScreen(
-                        viewModel = authViewModel,
-                        token = token,
-                        onSiswaClick = onNavigateToDetailSiswa
-                    )
-                } else {
-                    dashboardSiswaContent()
+                when (role) {
+                    "admin" -> {
+                        dashboardAdminContent()
+                    }
+                    "guru" -> {
+                        DashboardGuruScreen(
+                            viewModel = authViewModel,
+                            token = token,
+                            onSiswaClick = onNavigateToDetailSiswa
+                        )
+                    }
+                    else -> {
+                        dashboardSiswaContent()
+                    }
                 }
             }
             composable(BottomNavItem.Rapor.route) {
                 RaporScreen(viewModel = zonaViewModel, token = token)
             }
+            composable(BottomNavItem.Users.route) {
+                if (role == "admin") {
+                    com.jarimanis.jarimanis.ui.features.admin.DaftarUserScreen(
+                        viewModel = authViewModel,
+                        token = token
+                    )
+                }
+            }
             composable(BottomNavItem.Profil.route) {
-                // 2. BERIKAN AUTHVIEWMODEL DAN TOKEN KE PROFIL SCREEN
                 ProfileScreen(
                     viewModel = authViewModel,
                     token = token,

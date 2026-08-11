@@ -19,7 +19,7 @@ interface ZonaApi {
     @POST("/api/post-test")
     suspend fun submitPostTest(
         @Header("Authorization") token: String,
-        @Body request: PreTestRequest
+        @Body request: PostTestRequest
     ): Response<ZonaResponse>
 
     @POST("/api/recall-makanan")

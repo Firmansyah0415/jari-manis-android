@@ -1,8 +1,7 @@
-package com.jarimanis.jarimanis.ui.features.rapor
+package com.jarimanis.jarimanis.ui.features.student
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,7 +21,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jarimanis.jarimanis.ui.features.dashboard.ZonaViewModel
 import com.jarimanis.jarimanis.utils.Resource
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -166,13 +164,13 @@ fun RaporScreen(viewModel: ZonaViewModel, token: String) {
                                 text = "$selesaiHarian dari 4 Zona Selesai",
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.secondaryContainer
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             LinearProgressIndicator(
                                 progress = { progress },
                                 modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp)),
-                                color = MaterialTheme.colorScheme.primary,
+                                color = MaterialTheme.colorScheme.secondaryContainer,
                                 trackColor = Color.White
                             )
                         }

@@ -49,6 +49,7 @@ fun EditProfileScreen(
 
     // State untuk form
     var name by remember { mutableStateOf(userProfile?.name ?: "") }
+    var username by remember { mutableStateOf(userProfile?.username ?: "") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -137,6 +138,16 @@ fun EditProfileScreen(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Nama Lengkap") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- TAMBAHAN INPUT USERNAME ---
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -264,6 +275,7 @@ fun EditProfileScreen(
                     viewModel.updateProfile(
                         token = token,
                         name = name,
+                        username = username,
                         password = password,
                         gender = gender,                   // KIRIM GENDER
                         sekolahId = selectedSekolahId,     // KIRIM SEKOLAH

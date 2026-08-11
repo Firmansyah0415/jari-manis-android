@@ -45,7 +45,7 @@ class AuthRepository(private val api: AuthApi) {
     suspend fun logout(token: String): Resource<String> {
         return try {
             // Format token untuk Sanctum: "Bearer eyJhbG..."
-            val formattedToken = "Bearer $token"
+            val formattedToken = formatToken(token)
             val response = api.logoutUser(formattedToken)
             if (response.isSuccessful) {
                 Resource.Success(response.body()?.message ?: "Logout sukses")
@@ -91,6 +91,7 @@ class AuthRepository(private val api: AuthApi) {
     suspend fun updateProfile(
         token: String,
         name: okhttp3.RequestBody?,
+        username: okhttp3.RequestBody?,
         password: okhttp3.RequestBody?,
         gender: okhttp3.RequestBody?,
         sekolahId: okhttp3.RequestBody?,
@@ -98,7 +99,7 @@ class AuthRepository(private val api: AuthApi) {
         fotoProfil: okhttp3.MultipartBody.Part?
     ): Resource<com.jarimanis.jarimanis.data.model.UpdateProfileResponse> {
         return try {
-            val response = api.updateProfile("Bearer $token", name, password, gender, sekolahId, kelasId, fotoProfil)
+            val response = api.updateProfile(formatToken(token), name, username, password, gender, sekolahId, kelasId, fotoProfil)
             if (response.isSuccessful && response.body() != null) {
                 Resource.Success(response.body()!!)
             } else {
@@ -111,7 +112,7 @@ class AuthRepository(private val api: AuthApi) {
 
     suspend fun getSiswaList(token: String): Resource<com.jarimanis.jarimanis.data.model.SiswaResponse> {
         return try {
-            val response = api.getSiswaList("Bearer $token")
+            val response = api.getSiswaList(formatToken(token))
             if (response.isSuccessful && response.body() != null) {
                 Resource.Success(response.body()!!)
             } else {
@@ -132,6 +133,32 @@ class AuthRepository(private val api: AuthApi) {
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Koneksi bermasalah")
+        }
+    }
+
+    suspend fun getAdminDashboard(token: String, sekolahId: Int? = null, kelasId: Int? = null): Resource<com.jarimanis.jarimanis.data.model.AdminDashboardResponse> {
+        return try {
+            val response = api.getAdminDashboard(formatToken(token), sekolahId, kelasId)
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error(response.message() ?: "Gagal memuat data admin")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getAdminUsers(token: String, role: String? = null, sekolahId: Int? = null, kelasId: Int? = null): Resource<com.jarimanis.jarimanis.data.model.UserListResponse> {
+        return try {
+            val response = api.getAdminUsers(formatToken(token), role, sekolahId, kelasId)
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error(response.message() ?: "Gagal memuat daftar user")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
         }
     }
 }

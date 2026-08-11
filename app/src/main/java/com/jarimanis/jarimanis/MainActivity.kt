@@ -9,7 +9,7 @@ import com.jarimanis.jarimanis.data.network.ApiClient
 import com.jarimanis.jarimanis.data.repository.AuthRepository
 import com.jarimanis.jarimanis.data.repository.ZonaRepository // Import baru
 import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel
-import com.jarimanis.jarimanis.ui.features.dashboard.ZonaViewModel // Import baru
+import com.jarimanis.jarimanis.ui.features.student.ZonaViewModel // Import baru
 import com.jarimanis.jarimanis.ui.navigation.AppNavigation
 import com.jarimanis.jarimanis.ui.theme.JariManisTheme
 import com.jarimanis.jarimanis.utils.ViewModelFactory

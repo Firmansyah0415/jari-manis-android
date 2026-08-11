@@ -1,4 +1,4 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.jarimanis.jarimanis.utils.Resource // Untuk memakai Resource.Loading
-import kotlinx.coroutines.flow.asStateFlow
 
 // State untuk memantau status pengiriman API
 data class ZonaUiState(
@@ -53,7 +52,7 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
         viewModelScope.launch {
             _uiState.value = ZonaUiState(isLoading = true)
             try {
-                val response = repository.submitPostTest(token, PreTestRequest(skor))
+                val response = repository.submitPostTest(token, PostTestRequest(skor))
                 if (response.isSuccessful) _uiState.value = ZonaUiState(successMessage = response.body()?.message)
                 else _uiState.value = ZonaUiState(errorMessage = "Gagal: ${response.message()}")
             } catch (e: Exception) {

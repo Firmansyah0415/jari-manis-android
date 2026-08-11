@@ -1,4 +1,4 @@
-package com.jarimanis.jarimanis.ui.features.dashboard
+package com.jarimanis.jarimanis.ui.features.student
 
 import android.app.DatePickerDialog
 import android.widget.Toast
@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
-import androidx.compose.ui.platform.LocalLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

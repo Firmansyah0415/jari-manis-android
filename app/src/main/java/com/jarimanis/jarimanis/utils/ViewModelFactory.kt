@@ -6,7 +6,7 @@ import com.jarimanis.jarimanis.data.local.SessionManager
 import com.jarimanis.jarimanis.data.repository.AuthRepository
 import com.jarimanis.jarimanis.data.repository.ZonaRepository
 import com.jarimanis.jarimanis.ui.features.auth.AuthViewModel
-import com.jarimanis.jarimanis.ui.features.dashboard.ZonaViewModel
+import com.jarimanis.jarimanis.ui.features.student.ZonaViewModel
 
 class ViewModelFactory(
     private val authRepository: AuthRepository,

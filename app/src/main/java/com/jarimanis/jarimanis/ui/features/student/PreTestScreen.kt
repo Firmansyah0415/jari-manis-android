@@ -1,7 +1,6 @@
-package com.jarimanis.jarimanis.ui.features.dashboard // Sesuaikan dengan package Anda
+package com.jarimanis.jarimanis.ui.features.student // Sesuaikan dengan package Anda
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed

@@ -1,22 +1,26 @@
 package com.jarimanis.jarimanis.ui.features.profil
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite // Ikon sementara yang aman
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.jarimanis.jarimanis.R // Pastikan package R benar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,24 +45,27 @@ fun TentangAplikasiScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()), // <--- PENYELAMAT SCROLL ADA DI SINI
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- LOGO APLIKASI (Menggunakan Ikon Vector bawaan yang 100% aman) ---
+            // --- LOGO APLIKASI ---
             Box(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Color.White) // Background putih untuk logo
+                    .padding(16.dp), // Padding agar logo tidak mepet
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Favorite,
+                // GANTI R.drawable.nama_file_anda DENGAN NAMA GAMBAR ANDA DI FOLDER DRAWABLE
+                // Jika belum sempat import, biarkan seperti ini agar tidak merah, lalu ganti nanti
+                Image(
+                    painter = painterResource(id = R.drawable.logo_jari_manis), // GANTI INI
                     contentDescription = "Logo Aplikasi",
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
@@ -129,6 +136,8 @@ fun TentangAplikasiScreen(navController: NavController) {
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

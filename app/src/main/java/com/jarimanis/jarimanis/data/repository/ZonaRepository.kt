@@ -4,6 +4,7 @@ import com.jarimanis.jarimanis.data.model.RaporResponse
 import com.jarimanis.jarimanis.data.network.AktivitasFisikRequest
 import com.jarimanis.jarimanis.data.network.MinumTtdRequest
 import com.jarimanis.jarimanis.data.network.PersonalHygieneRequest
+import com.jarimanis.jarimanis.data.network.PostTestRequest
 import com.jarimanis.jarimanis.data.network.PreTestRequest
 import com.jarimanis.jarimanis.data.network.RecallMakananRequest
 import com.jarimanis.jarimanis.data.network.ZonaApi
@@ -19,7 +20,7 @@ class ZonaRepository(private val api: ZonaApi) {
     suspend fun submitPreTest(token: String, request: PreTestRequest) =
         api.submitPreTest(formatToken(token), request)
 
-    suspend fun submitPostTest(token: String, request: PreTestRequest) =
+    suspend fun submitPostTest(token: String, request: PostTestRequest) =
         api.submitPostTest(formatToken(token), request)
 
     suspend fun submitRecallMakanan(token: String, request: RecallMakananRequest) =
