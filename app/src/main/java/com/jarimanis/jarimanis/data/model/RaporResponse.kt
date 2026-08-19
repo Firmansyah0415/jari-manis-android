@@ -15,7 +15,9 @@ data class RaporData(
     @SerializedName("recall_makanan") val recallMakanan: RaporItem?,
     @SerializedName("aktivitas_fisik") val aktivitasFisik: RaporItem?,
     @SerializedName("minum_ttd") val minumTtd: RaporItem?,
-    @SerializedName("personal_hygiene") val personalHygiene: RaporItem?
+    @SerializedName("personal_hygiene") val personalHygiene: RaporItem?,
+    @SerializedName("pre_test_kebugaran") val preTestKebugaran: RaporItem? = null,
+    @SerializedName("post_test_kebugaran") val postTestKebugaran: RaporItem? = null
 )
 
 data class RaporItem(

@@ -36,12 +36,10 @@ interface AuthApi {
     suspend fun logoutUser(@Header("Authorization") token: String): Response<LogoutResponse>
 
     // TAMBAHKAN @Headers DI SINI JUGA
-    @Headers("ngrok-skip-browser-warning: 69420")
     @GET("/api/sekolah")
     suspend fun getSekolah(): Response<SekolahResponse>
 
     // TAMBAHKAN @Headers DI SINI JUGA
-    @Headers("ngrok-skip-browser-warning: 69420")
     @GET("/api/kelas/{sekolah_id}")
     suspend fun getKelas(@Path("sekolah_id") sekolahId: Int): Response<KelasResponse>
 

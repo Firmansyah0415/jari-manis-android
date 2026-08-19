@@ -187,7 +187,15 @@ fun AppNavigation(
 
         composable("tes_kebugaran/{tipeTes}", arguments = listOf(navArgument("tipeTes") { type = NavType.StringType })) { backStackEntry ->
             val tipeTes = backStackEntry.arguments?.getString("tipeTes") ?: "pre"
-            TesKebugaranScreen(navController = navController, viewModel = zonaViewModel, token = token ?: "", tipeTes = tipeTes)
+            val gender = userProfile?.gender ?: "L"
+
+            TesKebugaranScreen(
+                navController = navController,
+                viewModel = zonaViewModel,
+                token = token ?: "",
+                tipeTes = tipeTes,
+                gender = gender
+            )
         }
 
         composable("leaderboard_fisik_route") { LeaderboardScreen(viewModel = zonaViewModel, token = token ?: "") }

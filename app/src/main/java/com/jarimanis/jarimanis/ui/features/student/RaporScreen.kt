@@ -15,7 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow // <-- TAMBAHAN IMPORT UNTUK SHADOW
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -123,7 +123,7 @@ fun RaporScreen(viewModel: ZonaViewModel, token: String) {
 
                     // === KARTU PROGRES HARIAN ===
                     Card(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -136,35 +136,32 @@ fun RaporScreen(viewModel: ZonaViewModel, token: String) {
                         }
                     }
 
-                    // 1. PRE-TEST
-                    AdvancedRaporCard(title = "Pre-Test (Kuesioner Awal)", data = data.preTest)
+                    // ==========================================
+                    // SECTION 1: KUESIONER PENGETAHUAN
+                    // ==========================================
+                    RaporSectionTitle("Pengetahuan Gizi & Kesehatan")
+                    AdvancedRaporCard(title = "Pre-Test (Awal)", data = data.preTest)
+                    AdvancedRaporCard(title = "Post-Test (Akhir)", data = data.postTest, isPostTest = true)
 
-                    // 2. RECALL MAKANAN (Dengan Dropdown)
-                    AdvancedRaporCard(
-                        title = "Recall 24 Jam",
-                        data = data.recallMakanan,
-                        isRecall = true // Memicu UI Dropdown
-                    )
+                    // ==========================================
+                    // SECTION 2: PENGUKURAN KEBUGARAN
+                    // ==========================================
+                    RaporSectionTitle("Hasil Pengukuran Kebugaran")
+                    AdvancedRaporCard(title = "Pre-Test Kebugaran", data = data.preTestKebugaran, isPostTest = true)
+                    AdvancedRaporCard(title = "Post-Test Kebugaran", data = data.postTestKebugaran, isPostTest = true)
 
-                    // 3. AKTIVITAS FISIK (Nama, Ikon Jam, Ikon Bintang)
+                    // ==========================================
+                    // SECTION 3: ZONA AKTIVITAS HARIAN
+                    // ==========================================
+                    RaporSectionTitle("Aktivitas Harian (Zona)")
+                    AdvancedRaporCard(title = "Recall 24 Jam", data = data.recallMakanan, isRecall = true)
                     AdvancedRaporCard(title = "Aktivitas Fisik", data = data.aktivitasFisik)
-
-                    // 4. MINUM TTD
                     AdvancedRaporCard(
                         title = "Minum TTD",
                         data = data.minumTtd,
                         customStatus = if (data.minumTtd?.sudahMinum == 1) "Sudah Minum TTD" else "Belum Minum TTD"
                     )
-
-                    // 5. PERSONAL HYGIENE (Dengan Dropdown)
-                    AdvancedRaporCard(
-                        title = "Personal Hygiene",
-                        data = data.personalHygiene,
-                        isHygiene = true // Memicu UI Dropdown
-                    )
-
-                    // 6. POST-TEST
-                    AdvancedRaporCard(title = "Post-Test (Evaluasi Akhir)", data = data.postTest, isPostTest = true)
+                    AdvancedRaporCard(title = "Personal Hygiene", data = data.personalHygiene, isHygiene = true)
 
                     Spacer(modifier = Modifier.height(32.dp))
                 }
@@ -174,9 +171,23 @@ fun RaporScreen(viewModel: ZonaViewModel, token: String) {
     }
 }
 
+@Composable
+fun RaporSectionTitle(title: String) {
+    Text(
+        text = title,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 4.dp)
+    )
+}
+
 // =========================================================
 // KARTU ITEM RAPOR YANG SANGAT CERDAS & FLEKSIBEL
 // =========================================================
+// (KODE AdvancedRaporCard TETAP SAMA PERSIS 100% SEPERTI MILIK ANDA)
 @Composable
 fun AdvancedRaporCard(
     title: String,
@@ -193,25 +204,22 @@ fun AdvancedRaporCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp) // Jarak antar kartu sedikit dijauhkan
-            // --- PERBAIKAN 1: SHADOW CUSTOM YANG LEMBUT ---
+            .padding(vertical = 8.dp)
             .shadow(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(12.dp),
-                spotColor = Color.LightGray.copy(alpha = 0.5f), // Warna bayangan lebih soft
+                spotColor = Color.LightGray.copy(alpha = 0.5f),
                 ambientColor = Color.Transparent
             )
             .clip(RoundedCornerShape(12.dp))
             .clickable(enabled = isExpandable) { expanded = !expanded }
-            .animateContentSize(), // Letakkan sebelum background agar animasinya mulus
+            .animateContentSize(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        // Matikan default elevation bawaan Material 3 agar tidak bentrok
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
 
-            // --- BAGIAN ATAS (Judul & Ikon Checkmark) ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -237,7 +245,6 @@ fun AdvancedRaporCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- BAGIAN TENGAH (Rangkuman) ---
             if (isDone) {
                 val score = data?.skorTotal ?: data?.skor
 
@@ -276,36 +283,30 @@ fun AdvancedRaporCard(
                 )
             }
 
-            // --- BAGIAN BAWAH (ISI DROPDOWN DETAIL) ---
             if (expanded && isDone) {
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // --- PERBAIKAN 2: FORMAT DETAIL RECALL 24 JAM ---
                 if (isRecall && data?.detailJawaban != null) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Detail Konsumsi:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
 
-                        // 1. Mengelompokkan berdasarkan Waktu (Makan Pagi, Selingan Pagi, dll)
                         val groupedData = data.detailJawaban.entries.groupBy { entry ->
-                            entry.key.substringBefore("_") // Mengambil kata sebelum "_"
+                            entry.key.substringBefore("_")
                         }
 
-                        // 2. Mengatur urutan agar rapi dari Pagi ke Malam
                         val waktuOrder = listOf("Makan Pagi", "Selingan Pagi", "Makan Siang", "Selingan Siang", "Makan Malam", "Selingan Malam")
                         val sortedGroups = groupedData.entries.sortedBy { group ->
                             val index = waktuOrder.indexOf(group.key)
-                            if (index == -1) 99 else index // Jika tidak dikenali, taruh paling bawah
+                            if (index == -1) 99 else index
                         }
 
-                        // 3. Menampilkan ke UI
                         sortedGroups.forEach { (waktu, items) ->
                             Column(modifier = Modifier.padding(bottom = 6.dp)) {
                                 Text(text = waktu, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
 
                                 items.forEach { item ->
-                                    // Memotong teks panjang menjadi ringkas (misal: "Makanan Pokok")
                                     var cleanCategory = item.key.substringAfter("_")
                                     if (cleanCategory.contains(" (")) {
                                         cleanCategory = cleanCategory.substringBefore(" (")
@@ -324,7 +325,6 @@ fun AdvancedRaporCard(
                     }
                 }
 
-                // Detail Personal Hygiene
                 if (isHygiene) {
                     val hygieneList = listOf(
                         "Mandi 2x Sehari" to data?.mandi2xSehari,

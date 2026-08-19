@@ -45,10 +45,8 @@ fun DetailRaporSiswaScreen(
     val context = LocalContext.current
     val detailRapor by viewModel.detailRaporSiswa.collectAsState()
 
-    // --- MENGAMBIL TOTAL POIN DARI DATA RAPOR SISWA ---
     val totalPoints = detailRapor?.data?.user?.totalSkor ?: 0
 
-    // --- STATE TANGGAL ---
     val calendar = Calendar.getInstance()
     var selectedDate by remember { mutableStateOf(calendar.time) }
 
@@ -60,7 +58,6 @@ fun DetailRaporSiswaScreen(
         { _, year, month, dayOfMonth ->
             calendar.set(year, month, dayOfMonth)
             selectedDate = calendar.time
-            // Fetch ulang saat guru mengganti tanggal
             if (token.isNotEmpty()) {
                 viewModel.fetchDetailRaporSiswa(token, siswaId, apiDateFormat.format(selectedDate))
             }
@@ -70,7 +67,6 @@ fun DetailRaporSiswaScreen(
         calendar.get(Calendar.DAY_OF_MONTH)
     ).apply { datePicker.maxDate = System.currentTimeMillis() }
 
-    // Fetch pertama kali halaman dibuka (default hari ini)
     LaunchedEffect(siswaId) {
         if (token.isNotEmpty()) viewModel.fetchDetailRaporSiswa(token, siswaId, apiDateFormat.format(selectedDate))
     }
@@ -83,7 +79,6 @@ fun DetailRaporSiswaScreen(
                     IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali") }
                 },
                 actions = {
-                    // --- TAMPILAN TOTAL POIN (Badge Putih agar kontras dengan TopBar Primary) ---
                     Surface(
                         color = Color.White,
                         shape = RoundedCornerShape(16.dp),
@@ -93,18 +88,9 @@ fun DetailRaporSiswaScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.Star,
-                                contentDescription = "Poin",
-                                tint = Color(0xFFFFD700), // Warna Emas
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Icon(Icons.Filled.Star, contentDescription = "Poin", tint = Color(0xFFFFD700), modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "$totalPoints Poin",
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            Text(text = "$totalPoints Poin", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 },
@@ -135,20 +121,12 @@ fun DetailRaporSiswaScreen(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ==========================================
-                // HEADER PROFIL SISWA
-                // ==========================================
                 Box(
                     modifier = Modifier.size(100.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     if (user != null && !user.fotoProfil.isNullOrEmpty()) {
-                        AsyncImage(
-                            model = "${ApiClient.BASE_URL}profil/${user.fotoProfil}",
-                            contentDescription = "Foto Siswa",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
+                        AsyncImage(model = "${ApiClient.BASE_URL}profil/${user.fotoProfil}", contentDescription = "Foto Siswa", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                     } else {
                         Icon(Icons.Filled.AccountCircle, "Avatar", modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary)
                     }
@@ -159,9 +137,6 @@ fun DetailRaporSiswaScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ==========================================
-                // FILTER TANGGAL RAPOR
-                // ==========================================
                 Text("Lihat Progress Tanggal:", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
@@ -179,7 +154,6 @@ fun DetailRaporSiswaScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Menghitung berapa misi harian yang sudah selesai
                 var selesaiHarian = 0
                 if (data.recallMakanan != null) selesaiHarian++
                 if (data.aktivitasFisik != null) selesaiHarian++
@@ -188,11 +162,8 @@ fun DetailRaporSiswaScreen(
 
                 val progress = selesaiHarian / 4f
 
-                // ==========================================
-                // KARTU PROGRESS HARIAN SISWA
-                // ==========================================
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -216,32 +187,31 @@ fun DetailRaporSiswaScreen(
                 }
 
                 // ==========================================
-                // DAFTAR ZONA & NILAI (Gunakan AdvancedRaporCard)
+                // SECTION 1: KUESIONER PENGETAHUAN
                 // ==========================================
+                RaporSectionTitleTeacher("Pengetahuan Gizi & Kesehatan")
+                AdvancedRaporCardTeacher(title = "Pre-Test (Awal)", data = data.preTest)
+                AdvancedRaporCardTeacher(title = "Post-Test (Akhir)", data = data.postTest, isPostTest = true)
 
-                AdvancedRaporCard(title = "Pre-Test (Kuesioner Awal)", data = data.preTest)
+                // ==========================================
+                // SECTION 2: PENGUKURAN KEBUGARAN
+                // ==========================================
+                RaporSectionTitleTeacher("Hasil Pengukuran Kebugaran")
+                AdvancedRaporCardTeacher(title = "Pre-Test Kebugaran", data = data.preTestKebugaran, isPostTest = true)
+                AdvancedRaporCardTeacher(title = "Post-Test Kebugaran", data = data.postTestKebugaran, isPostTest = true)
 
-                AdvancedRaporCard(
-                    title = "Recall 24 Jam",
-                    data = data.recallMakanan,
-                    isRecall = true
-                )
-
-                AdvancedRaporCard(title = "Aktivitas Fisik", data = data.aktivitasFisik)
-
-                AdvancedRaporCard(
+                // ==========================================
+                // SECTION 3: ZONA AKTIVITAS HARIAN
+                // ==========================================
+                RaporSectionTitleTeacher("Aktivitas Harian (Zona)")
+                AdvancedRaporCardTeacher(title = "Recall 24 Jam", data = data.recallMakanan, isRecall = true)
+                AdvancedRaporCardTeacher(title = "Aktivitas Fisik", data = data.aktivitasFisik)
+                AdvancedRaporCardTeacher(
                     title = "Minum TTD",
                     data = data.minumTtd,
                     customStatus = if (data.minumTtd?.sudahMinum == 1) "Sudah Minum TTD" else "Belum Minum TTD"
                 )
-
-                AdvancedRaporCard(
-                    title = "Personal Hygiene",
-                    data = data.personalHygiene,
-                    isHygiene = true
-                )
-
-                AdvancedRaporCard(title = "Post-Test (Evaluasi Akhir)", data = data.postTest, isPostTest = true)
+                AdvancedRaporCardTeacher(title = "Personal Hygiene", data = data.personalHygiene, isHygiene = true)
 
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -249,11 +219,22 @@ fun DetailRaporSiswaScreen(
     }
 }
 
-// =========================================================
-// KARTU ITEM RAPOR YANG SANGAT CERDAS & FLEKSIBEL
-// =========================================================
 @Composable
-fun AdvancedRaporCard(
+fun RaporSectionTitleTeacher(title: String) {
+    Text(
+        text = title,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp, bottom = 4.dp)
+    )
+}
+
+// (KODE AdvancedRaporCardTeacher TETAP SAMA PERSIS SEPERTI AdvancedRaporCard DI ATAS)
+@Composable
+fun AdvancedRaporCardTeacher(
     title: String,
     data: RaporItem?,
     customStatus: String? = null,
@@ -284,7 +265,6 @@ fun AdvancedRaporCard(
     ) {
         Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
 
-            // --- BAGIAN ATAS (Judul & Ikon Checkmark) ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -310,7 +290,6 @@ fun AdvancedRaporCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- BAGIAN TENGAH (Rangkuman) ---
             if (isDone) {
                 val score = data?.skorTotal ?: data?.skor
 
@@ -349,7 +328,6 @@ fun AdvancedRaporCard(
                 )
             }
 
-            // --- BAGIAN BAWAH (ISI DROPDOWN DETAIL) ---
             if (expanded && isDone) {
                 Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))

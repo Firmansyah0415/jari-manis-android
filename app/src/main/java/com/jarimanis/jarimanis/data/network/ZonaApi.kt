@@ -1,6 +1,7 @@
 package com.jarimanis.jarimanis.data.network
 
 import com.jarimanis.jarimanis.data.model.RaporResponse
+import com.jarimanis.jarimanis.data.model.TesKebugaranDetailResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -46,7 +47,6 @@ interface ZonaApi {
         @Body request: PersonalHygieneRequest
     ): Response<ZonaResponse>
 
-    // Tambahkan di dalam interface ZonaApi
     @GET("/api/rapor")
     suspend fun getRapor(
         @Header("Authorization") token: String,
@@ -58,6 +58,12 @@ interface ZonaApi {
         @Header("Authorization") token: String,
         @Body request: TesKebugaranRequest
     ): Response<ZonaResponse>
+
+    @GET("/api/tes-kebugaran/{tipe_tes}")
+    suspend fun getTesKebugaran(
+        @Header("Authorization") token: String,
+        @retrofit2.http.Path("tipe_tes") tipeTes: String
+    ): Response<TesKebugaranDetailResponse>
 
     @GET("/api/leaderboard-fisik")
     suspend fun getLeaderboardAktivitasFisik(

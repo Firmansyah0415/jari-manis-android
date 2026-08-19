@@ -2,6 +2,7 @@ package com.jarimanis.jarimanis.ui.features.student
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jarimanis.jarimanis.data.model.TesKebugaranDetailResponse
 import com.jarimanis.jarimanis.data.network.*
 import com.jarimanis.jarimanis.data.repository.ZonaRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -175,6 +176,17 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = "Error Jaringan: ${e.message}")
             }
+        }
+    }
+
+    // State untuk mengambil data lama
+    private val _tesKebugaranData = MutableStateFlow<Resource<TesKebugaranDetailResponse>?>(null)
+    val tesKebugaranData: StateFlow<Resource<TesKebugaranDetailResponse>?> = _tesKebugaranData.asStateFlow()
+
+    fun fetchTesKebugaran(token: String, tipeTes: String) {
+        _tesKebugaranData.value = Resource.Loading
+        viewModelScope.launch {
+            _tesKebugaranData.value = repository.getTesKebugaran(token, tipeTes)
         }
     }
 

@@ -14,7 +14,6 @@ import com.jarimanis.jarimanis.utils.Resource
 
 class ZonaRepository(private val api: ZonaApi) {
 
-    // Helper function untuk memastikan format token benar untuk Laravel Sanctum
     private fun formatToken(token: String): String {
         return if (token.startsWith("Bearer ")) token else "Bearer $token"
     }
@@ -68,6 +67,19 @@ class ZonaRepository(private val api: ZonaApi) {
                 Resource.Success(response.body()!!)
             } else {
                 Resource.Error(response.message() ?: "Gagal mengambil data leaderboard")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getTesKebugaran(token: String, tipeTes: String): Resource<com.jarimanis.jarimanis.data.model.TesKebugaranDetailResponse> {
+        return try {
+            val response = api.getTesKebugaran(formatToken(token), tipeTes)
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error(response.message() ?: "Gagal mengambil data")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
