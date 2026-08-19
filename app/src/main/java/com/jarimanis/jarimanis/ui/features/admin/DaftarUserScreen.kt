@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +48,8 @@ fun DaftarUserScreen(
 
     var expandedSekolah by remember { mutableStateOf(false) }
     var expandedKelas by remember { mutableStateOf(false) }
+
+    var searchQuery by remember { mutableStateOf("") }
 
     // Fungsi helper untuk menarik data ulang berdasarkan Tab dan Filter aktif
     fun refreshData() {
@@ -178,24 +182,44 @@ fun DaftarUserScreen(
                     item { Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) { Text(state.message, color = Color.Red) } }
                 }
                 is Resource.Success -> {
-                    val users = state.data.data
+                    val allUsers = state.data.data
+                    // Filter Lokal Berdasarkan Search Query
+                    val filteredUsers = if (searchQuery.isBlank()) allUsers else {
+                        allUsers.filter {
+                            it.name.contains(searchQuery, ignoreCase = true) ||
+                                    it.username.contains(searchQuery, ignoreCase = true)
+                        }
+                    }
 
                     item {
-                        // --- MENAMPILKAN STATISTIK TOTAL USER DI SINI ---
-                        val roleName = roles[selectedTabIndex].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+                        // --- SEARCH BAR BARU ---
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Cari nama atau username...") },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Cari") },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                unfocusedBorderColor = Color.LightGray
+                            ),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+
+                        val roleName = roles[selectedTabIndex].replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.ROOT) else it.toString() }
                         Text(
-                            text = "Total $roleName: ${users.size} Akun",
+                            text = "Total $roleName: ${filteredUsers.size} Akun",
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                     }
 
-                    if (users.isEmpty()) {
-                        item { Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) { Text("Belum ada data ${roles[selectedTabIndex]}", color = Color.Gray) } }
+                    if (filteredUsers.isEmpty()) {
+                        item { Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) { Text(if (searchQuery.isNotBlank()) "User tidak ditemukan" else "Belum ada data ${roles[selectedTabIndex]}", color = Color.Gray) } }
                     } else {
-                        // Looping item langsung di dalam LazyColumn Root
-                        items(users) { user ->
+                        items(filteredUsers) { user ->
                             UserItemCard(user = user, modifier = Modifier.padding(horizontal = 16.dp))
                         }
                         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -217,7 +241,11 @@ fun UserItemCard(user: UserProfile, modifier: Modifier = Modifier) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(50.dp).clip(CircleShape).background(Color.LightGray), contentAlignment = Alignment.Center) {
                 if (!user.fotoProfil.isNullOrEmpty()) {
-                    AsyncImage(model = "${ApiClient.BASE_URL}storage/profil/${user.fotoProfil}", contentDescription = "Foto", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    AsyncImage(
+                        model = "${ApiClient.BASE_URL}profil/${user.fotoProfil}",
+                        contentDescription = "Foto",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop)
                 } else {
                     Icon(Icons.Filled.AccountCircle, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(40.dp))
                 }

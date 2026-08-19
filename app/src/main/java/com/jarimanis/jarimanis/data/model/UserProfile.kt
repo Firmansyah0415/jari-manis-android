@@ -7,14 +7,16 @@ data class UserProfile(
     val role: String,
     val name: String,
     val username: String,
-    val gender: String?, // Bisa null karena user lama mungkin belum punya
+    val gender: String?,
     @SerializedName("foto_profil") val fotoProfil: String?,
-    val sekolah: Sekolah?, // Data relasi yang dikirim dari Laravel
-    val kelas: Kelas?,      // Data relasi yang dikirim dari Laravel
+    val sekolah: Sekolah?,
+    val kelas: Kelas?,
 
-    // TAMBAHKAN BARIS INI:
     @SerializedName("total_skor") val totalSkor: Int? = null,
     @SerializedName("total_hari_aktif") val totalHariAktif: Int? = 0,
+    @SerializedName("is_post_test_done") val isPostTestDone: Boolean? = false,
+
     // --- TAMBAHAN BARU ---
-    @SerializedName("is_post_test_done") val isPostTestDone: Boolean? = false
+    @SerializedName("is_pre_test_kebugaran_done") val isPreTestKebugaranDone: Boolean? = false,
+    @SerializedName("is_post_test_kebugaran_done") val isPostTestKebugaranDone: Boolean? = false
 )

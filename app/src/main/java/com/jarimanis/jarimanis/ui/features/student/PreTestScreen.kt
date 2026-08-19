@@ -27,54 +27,104 @@ data class Question(
 
 val preTestQuestions = listOf(
     Question(
-        text = "1. Apa yang dimaksud dengan stunting?",
+        text = "1. Anemia adalah kondisi ketika tubuh mengalami kekurangan...",
         options = listOf(
-            "Kondisi gagal tumbuh pada anak akibat kekurangan gizi kronis",
-            "Penyakit bawaan lahir yang tidak bisa dicegah",
-            "Kondisi anak yang terlalu aktif",
-            "Gangguan pencernaan sementara"
+            "Vitamin C",
+            "Sel darah merah atau hemoglobin",
+            "Air dalam tubuh",
+            "Lemak"
+        ),
+        correctIndex = 1
+    ),
+    Question(
+        text = "2. Salah satu tanda atau gejala anemia yang umum terjadi adalah...",
+        options = listOf(
+            "Mudah lelah dan lemas",
+            "Nafsu makan meningkat",
+            "Kulit semakin cerah",
+            "Tidur semakin sedikit"
         ),
         correctIndex = 0
     ),
     Question(
-        text = "2. Salah satu cara mencegah anemia pada remaja putri adalah dengan...",
+        text = "3. TTD (Tablet Tambah Darah) terutama mengandung zat besi yang berfungsi untuk...",
         options = listOf(
-            "Minum air es setiap hari",
-            "Mengonsumsi Tablet Tambah Darah (TTD)",
-            "Mengurangi jam tidur",
-            "Memperbanyak makan makanan manis"
+            "Membantu pembentukan hemoglobin",
+            "Meningkatkan kadar gula darah",
+            "Menurunkan berat badan",
+            "Mengurangi kebutuhan cairan"
         ),
-        correctIndex = 1
+        correctIndex = 0
     ),
     Question(
-        text = "3. Mengapa remaja putri lebih rentan mengalami anemia?",
+        text = "4. Agar penyerapan zat besi dari TTD lebih baik, sebaiknya TTD dikonsumsi bersama...",
         options = listOf(
-            "Karena kurang berolahraga",
-            "Karena sering jajan sembarangan",
-            "Karena mengalami menstruasi setiap bulan",
-            "Karena kurang terkena sinar matahari"
+            "Teh",
+            "Kopi",
+            "Air putih atau minuman yang mengandung vitamin C",
+            "Minuman bersoda"
         ),
         correctIndex = 2
     ),
     Question(
-        text = "4. Berapa kali minimal remaja putri dianjurkan meminum Tablet Tambah Darah (TTD)?",
+        text = "5. Contoh makanan yang merupakan sumber zat besi adalah...",
         options = listOf(
-            "1 kali sehari",
-            "1 kali seminggu",
-            "1 kali sebulan",
-            "1 kali setahun"
+            "Daging, hati, ikan, dan kacang-kacangan",
+            "Permen dan cokelat",
+            "Minuman bersoda",
+            "Kerupuk saja"
+        ),
+        correctIndex = 0
+    ),
+    Question(
+        text = "6. Prinsip utama gizi seimbang adalah...",
+        options = listOf(
+            "Menghindari semua jenis makanan",
+            "Mengonsumsi satu jenis makanan setiap hari",
+            "Mengonsumsi makanan beragam sesuai kebutuhan tubuh",
+            "Hanya mengonsumsi makanan yang rendah lemak"
+        ),
+        correctIndex = 2
+    ),
+    Question(
+        text = "7. Contoh aktivitas fisik yang baik dilakukan secara rutin adalah...",
+        options = listOf(
+            "Duduk sepanjang hari",
+            "Jalan kaki, bersepeda, atau olahraga",
+            "Bermain gawai sepanjang hari",
+            "Tidur sepanjang waktu luang"
         ),
         correctIndex = 1
     ),
     Question(
-        text = "5. Apa saja komponen gizi seimbang dalam pedoman 'Isi Piringku'?",
+        text = "8. Contoh makanan yang merupakan sumber zat besi adalah...",
         options = listOf(
-            "Hanya nasi dan mie",
-            "Hanya sayur dan buah-buahan",
-            "Makanan pokok, lauk pauk, sayuran, dan buah-buahan",
-            "Lauk pauk dan susu saja"
+            "Daging, hati, ikan, dan kacang-kacangan",
+            "Permen dan cokelat",
+            "Minuman bersoda",
+            "Kerupuk saja"
+        ),
+        correctIndex = 0
+    ),
+    Question(
+        text = "9. Salah satu contoh personal hygiene yang baik adalah...",
+        options = listOf(
+            "Jarang mencuci tangan",
+            "Menggunakan handuk bersama-sama",
+            "Mandi dan menjaga kebersihan tubuh secara teratur",
+            "Tidak mengganti pakaian setelah berkeringat"
         ),
         correctIndex = 2
+    ),
+    Question(
+        text = "10. Mencuci tangan dengan sabun terutama penting dilakukan...",
+        options = listOf(
+            "Hanya ketika tangan terlihat kotor",
+            "Sebelum makan dan setelah menggunakan toilet",
+            "Hanya sebelum tidur",
+            "Sekali dalam sehari saja"
+        ),
+        correctIndex = 1
     )
 )
 

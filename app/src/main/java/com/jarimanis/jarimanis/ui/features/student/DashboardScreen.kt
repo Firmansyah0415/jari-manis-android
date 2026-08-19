@@ -1,11 +1,10 @@
 package com.jarimanis.jarimanis.ui.features.student
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,14 +13,16 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox // <-- IMPORT API TERBARU
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,16 +50,25 @@ fun DashboardScreen(
     totalPoints: Int = 0,
     totalHariAktif: Int = 0,
     isPostTestDone: Boolean = false,
+
+    // --- PARAMETER BARU UNTUK TES KEBUGARAN ---
+    isPreTestKebugaranDone: Boolean = false,
+    isPostTestKebugaranDone: Boolean = false,
+
     onRefreshRequest: () -> Unit = {}
 ) {
     val offWhiteBackground = Color(0xFFF8F9FA)
     val coroutineScope = rememberCoroutineScope()
 
-    // --- STATE PULL TO REFRESH (Versi 1.3.0+) ---
     var isRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        onRefreshRequest()
+    }
 
     Scaffold(
         topBar = {
+            // JANGAN DIUBAH (Sesuai Permintaan)
             TopAppBar(
                 title = {
                     Column {
@@ -97,14 +107,13 @@ fun DashboardScreen(
         containerColor = offWhiteBackground
     ) { paddingValues ->
 
-        // --- PENGGUNAAN API BARU PullToRefreshBox ---
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
                 coroutineScope.launch {
                     isRefreshing = true
-                    onRefreshRequest() // Tarik data dari API
-                    delay(1000.milliseconds) // Animasi berputar minimal 1 detik
+                    onRefreshRequest()
+                    delay(1000.milliseconds)
                     isRefreshing = false
                 }
             },
@@ -112,39 +121,68 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+            // MENGGUNAKAN LAZYCOLUMN AGAR PENGELOMPOKAN LEBIH JELAS
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp) // Jarak antar kelompok
             ) {
-                Text(
-                    text = "Pilih Zona Aktivitas",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                // ==========================================
+                // KELOMPOK 1: ZONA HARIAN
+                // ==========================================
+                item {
+                    Column {
+                        SectionTitle("Misi Harian Anda")
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Baris 1: Recall & Fisik
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            MenuCard("Recall\n24 Jam", Icons.Default.ShoppingCart, Color(0xFF4CAF50), modifier = Modifier.weight(1f)) { navController.navigate("recall_makanan_route") }
+                            MenuCard("Aktivitas\nFisik", Icons.AutoMirrored.Filled.DirectionsRun, Color(0xFFFF9800), modifier = Modifier.weight(1f)) { navController.navigate("aktivitas_fisik_route") }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Baris 2: TTD & Hygiene
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            MenuCard("Minum\nTTD", Icons.Default.Favorite, Color(0xFFE91E63), modifier = Modifier.weight(1f)) { navController.navigate("minum_ttd_route") }
+                            MenuCard("Personal\nHygiene", Icons.Default.Face, Color(0xFF2196F3), modifier = Modifier.weight(1f)) { navController.navigate("personal_hygiene_route") }
+                        }
+                    }
+                }
+
+                // ==========================================
+                // KELOMPOK 2: PUSAT PEMBELAJARAN
+                // ==========================================
+                item {
+                    Column {
+                        SectionTitle("Pusat Pembelajaran")
+                        Spacer(modifier = Modifier.height(12.dp))
                         ModulEdukasiCard { navController.navigate("edukasi_route") }
                     }
+                }
 
-                    item { MenuCard("Recall\n24 Jam", Icons.Default.ShoppingCart, Color(0xFF4CAF50)) { navController.navigate("recall_makanan_route") } }
-                    item { MenuCard("Aktivitas\nFisik", Icons.AutoMirrored.Filled.DirectionsRun, Color(0xFFFF9800)) { navController.navigate("aktivitas_fisik_route") } }
-                    item { MenuCard("Minum\nTTD", Icons.Default.Favorite, Color(0xFFE91E63)) { navController.navigate("minum_ttd_route") } }
-                    item { MenuCard("Personal\nHygiene", Icons.Default.Face, Color(0xFF2196F3)) { navController.navigate("personal_hygiene_route") } }
-                    // --- KARTU POST-TEST (Membentang penuh di paling bawah) ---
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                // ==========================================
+                // KELOMPOK 3: EVALUASI & PENGUKURAN
+                // ==========================================
+                item {
+                    Column {
+                        SectionTitle("Evaluasi & Pengukuran")
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        TesKebugaranCard(
+                            isPreTestDone = isPreTestKebugaranDone,
+                            isPostTestDone = isPostTestKebugaranDone,
+                            onPreTestClick = { navController.navigate("tes_kebugaran/pre") },
+                            onPostTestClick = { navController.navigate("tes_kebugaran/post") }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         PostTestCard(
                             totalHariAktif = totalHariAktif,
                             isPostTestDone = isPostTestDone,
                             onClick = {
-                                // Jangan navigasi jika sudah dikerjakan
                                 if (totalHariAktif >= 5 && !isPostTestDone) {
                                     navController.navigate("post_test_route")
                                 }
@@ -158,16 +196,26 @@ fun DashboardScreen(
 }
 
 // ===============================================
-// KOMPONEN-KOMPONEN KARTU (TIDAK ADA PERUBAHAN)
+// KOMPONEN-KOMPONEN KARTU
 // ===============================================
 
 @Composable
-fun MenuCard(title: String, icon: ImageVector, color: Color, onClick: () -> Unit) {
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.DarkGray
+    )
+}
+
+@Composable
+fun MenuCard(title: String, icon: ImageVector, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable { onClick() }
+        modifier = modifier.aspectRatio(1f).clickable { onClick() }
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -209,9 +257,84 @@ fun ModulEdukasiCard(onClick: () -> Unit) {
     }
 }
 
-// --- TAMBAHKAN KOMPONEN KARTU INI DI LUAR FUNGSI DASHBOARD ---
+// --- KOMPONEN KARTU TES KEBUGARAN (DENGAN VALIDASI IKON) ---
 @Composable
-fun PostTestCard(totalHariAktif: Int, isPostTestDone: Boolean, onClick: () -> Unit) { // Tambah parameter isPostTestDone
+fun TesKebugaranCard(
+    isPreTestDone: Boolean,
+    isPostTestDone: Boolean,
+    onPreTestClick: () -> Unit,
+    onPostTestClick: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(Color(0xFFE0F7FA)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(imageVector = Icons.Filled.FitnessCenter, contentDescription = "Kebugaran", tint = Color(0xFF00BCD4))
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text("Pengukuran Kebugaran", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Ukur kondisi fisikmu secara berkala", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                // TOMBOL PRE-TEST
+                OutlinedButton(
+                    onClick = onPreTestClick,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        // Jika sudah diisi, ubah warna agar terlihat 'Selesai'
+                        contentColor = if (isPreTestDone) Color(0xFF4CAF50) else Color(0xFF00BCD4),
+                        containerColor = if (isPreTestDone) Color(0xFFE8F5E9) else Color.Transparent
+                    ),
+                    border = BorderStroke(1.dp, if (isPreTestDone) Color(0xFF4CAF50) else Color(0xFF00BCD4))
+                ) {
+                    if (isPreTestDone) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = "Selesai", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Pre-Test")
+                    } else {
+                        Text("Isi Pre-Test")
+                    }
+                }
+
+                // TOMBOL POST-TEST
+                Button(
+                    onClick = onPostTestClick,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isPostTestDone) Color(0xFF4CAF50) else Color(0xFF00BCD4)
+                    )
+                ) {
+                    if (isPostTestDone) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = "Selesai", tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Post-Test")
+                    } else {
+                        Text("Isi Post-Test")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PostTestCard(totalHariAktif: Int, isPostTestDone: Boolean, onClick: () -> Unit) {
     val isUnlocked = totalHariAktif >= 5
     val progress = (totalHariAktif / 5f).coerceIn(0f, 1f)
     val sisaHari = if (5 - totalHariAktif > 0) 5 - totalHariAktif else 0
@@ -220,9 +343,9 @@ fun PostTestCard(totalHariAktif: Int, isPostTestDone: Boolean, onClick: () -> Un
         colors = CardDefaults.cardColors(
             containerColor = if (isUnlocked) MaterialTheme.colorScheme.secondaryContainer else Color.LightGray.copy(alpha = 0.3f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isUnlocked) 4.dp else 0.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isUnlocked) 2.dp else 0.dp),
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
+        modifier = Modifier.fillMaxWidth().clickable(enabled = isUnlocked && !isPostTestDone) { onClick() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -230,23 +353,17 @@ fun PostTestCard(totalHariAktif: Int, isPostTestDone: Boolean, onClick: () -> Un
                     modifier = Modifier.size(48.dp).clip(CircleShape).background(if (isUnlocked) MaterialTheme.colorScheme.secondary else Color.Gray),
                     contentAlignment = Alignment.Center
                 ) {
-                    // LOGIKA IKON BARU:
-                    // 1. Jika belum 5 hari -> Gembok Terkunci
-                    // 2. Jika sudah 5 hari & SUDAH dikerjakan -> Centang
-                    // 3. Jika sudah 5 hari & BELUM dikerjakan -> Gembok Terbuka
                     val iconToDisplay = when {
                         !isUnlocked -> Icons.Filled.Lock
                         isPostTestDone -> Icons.Filled.CheckCircle
                         else -> Icons.Filled.LockOpen
                     }
-
                     Icon(iconToDisplay, contentDescription = "Post Test", tint = Color.White)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Evaluasi Akhir (Post-Test)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Evaluasi Akhir Kuesioner", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-                    // LOGIKA TEKS BARU:
                     if (!isUnlocked) {
                         Text("Misi Harian: $totalHariAktif/5 Selesai", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
                     } else if (isPostTestDone) {

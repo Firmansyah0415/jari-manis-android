@@ -285,17 +285,27 @@ class AuthViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            // 1. Ambil token saat ini dari DataStore
+            // 1. KUNCI UTAMA: Kembalikan UI State ke Idle PERTAMA KALI
+            // agar layar manapun tidak bereaksi aneh.
+            _uiState.value = AuthUiState.Idle
+
+            // 2. Ambil token saat ini dari DataStore SEBELUM dihapus
             val token = sessionManager.getToken.firstOrNull()
 
-            // 2. Jika token ada, tembak API Logout di Laravel
-            if (token != null) {
-                repository.logout(token)
-            }
-
-            // 3. Hapus memori sesi (termasuk role & pretest status) dan kembalikan state ke Idle
+            // 3. BERSIHKAN SEMUA MEMORI SECARA INSTAN! (0 Detik)
             sessionManager.clearSession()
-            _uiState.value = AuthUiState.Idle
+            _userProfile.value = null
+            _adminDashboardState.value = null
+            _siswaList.value = emptyList()
+
+            // 4. Tembak API Logout di background (Tidak usah ditunggu UI)
+            if (token != null) {
+                try {
+                    repository.logout(token)
+                } catch (e: Exception) {
+                    // Abaikan error jaringan
+                }
+            }
         }
     }
 }

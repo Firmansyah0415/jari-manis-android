@@ -3,12 +3,15 @@ package com.jarimanis.jarimanis.ui.features.student
 import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -50,7 +53,9 @@ fun RecallMakananScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
-    val checkedItems = remember { mutableStateMapOf<String, Boolean>() }
+    // STATE BARU: Menyimpan Teks jawaban (bukan true/false lagi)
+    // Jika key ada di map, berarti dicentang. Value-nya adalah teks yang diketik siswa.
+    val checkedItems = remember { mutableStateMapOf<String, String>() }
     var expandedCategory by remember { mutableStateOf<String?>(null) }
 
     // --- STATE TANGGAL ---
@@ -87,7 +92,19 @@ fun RecallMakananScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Zona 1: Recall 24 Jam", fontWeight = FontWeight.Bold) }, colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard))
+            TopAppBar(
+                title = { Text("Zona 1: Recall 24 Jam", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard),
+                // --- 1. TAMBAHKAN TOMBOL KEMBALI DI SINI ---
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
+                    }
+                }
+            )
         },
         containerColor = offWhiteBackground
     ) { paddingValues ->
@@ -98,7 +115,7 @@ fun RecallMakananScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
-                    Text("Pilih tanggal dan centang makanan yang kamu konsumsi.", color = Color.Gray, fontSize = 14.sp)
+                    Text("Pilih tanggal dan centang makanan yang kamu konsumsi, lalu ketik nama makanannya.", color = Color.Gray, fontSize = 14.sp)
                 }
 
                 // --- PEMILIH TANGGAL ---
@@ -135,12 +152,48 @@ fun RecallMakananScreen(
                                 Column(modifier = Modifier.padding(top = 12.dp)) {
                                     Divider(color = offWhiteBackground, thickness = 1.dp)
                                     Spacer(modifier = Modifier.height(8.dp))
+
                                     category.items.forEach { foodItem ->
                                         val stateKey = "${category.title}_$foodItem"
-                                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                            Checkbox(checked = checkedItems[stateKey] == true, onCheckedChange = { checkedItems[stateKey] = it })
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(text = foodItem, fontSize = 14.sp, color = Color.DarkGray)
+                                        val isChecked = checkedItems.containsKey(stateKey)
+
+                                        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                            // BARIS CHECKBOX
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Checkbox(
+                                                    checked = isChecked,
+                                                    onCheckedChange = { checked ->
+                                                        if (checked) {
+                                                            checkedItems[stateKey] = "" // Tambahkan dengan teks kosong
+                                                        } else {
+                                                            checkedItems.remove(stateKey) // Hapus jika batal centang
+                                                        }
+                                                    }
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(text = foodItem, fontSize = 14.sp, color = Color.DarkGray)
+                                            }
+
+                                            // KOTAK TEKS (Hanya Muncul Jika Dicentang)
+                                            AnimatedVisibility(
+                                                visible = isChecked,
+                                                enter = expandVertically(),
+                                                exit = shrinkVertically()
+                                            ) {
+                                                OutlinedTextField(
+                                                    value = checkedItems[stateKey] ?: "",
+                                                    onValueChange = { newValue ->
+                                                        checkedItems[stateKey] = newValue // Update teks ketikan
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth().padding(start = 48.dp, end = 8.dp, bottom = 8.dp),
+                                                    singleLine = true,
+                                                    textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
+                                                    colors = OutlinedTextFieldDefaults.colors(
+                                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                                        unfocusedBorderColor = Color.LightGray
+                                                    )
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -153,22 +206,27 @@ fun RecallMakananScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-                            val skorTotal = checkedItems.values.count { it } * 5
-                            val detailJawabanMap = checkedItems.filterValues { it }.keys.associateWith { 5 }
+                            val validItems = checkedItems.filterValues { it.isNotBlank() }
+                            val skorTotal = validItems.size * 5
 
                             viewModel.submitRecallMakanan(
                                 token = token,
-                                tanggal = apiDateFormat.format(selectedDate), // Menggunakan tanggal pilihan
+                                tanggal = apiDateFormat.format(selectedDate),
                                 skorTotal = skorTotal,
-                                detailJawaban = detailJawabanMap
+                                detailJawaban = validItems
                             )
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(8.dp),
-                        enabled = !uiState.isLoading
+                        // --- KODE PERBAIKAN DI SINI ---
+                        // Tombol nyala JIKA tidak loading AND minimal ada 1 kotak dicentang AND semua yang dicentang teksnya sudah diketik
+                        enabled = !uiState.isLoading && checkedItems.isNotEmpty() && checkedItems.values.all { it.isNotBlank() }
                     ) {
-                        if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                        else Text("Simpan Aktivitas Makan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                        } else {
+                            Text("Simpan Aktivitas Makan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                     Spacer(modifier = Modifier.height(32.dp))
                 }

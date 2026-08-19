@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,7 +34,9 @@ fun AktivitasFisikScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
-    var sliderPosition by remember { mutableStateOf(0f) }
+    // --- STATE BARU: Nama Aktivitas & Slider ---
+    var namaAktivitas by remember { mutableStateOf("") }
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
 
     // --- STATE TANGGAL ---
     val calendar = Calendar.getInstance()
@@ -69,13 +72,24 @@ fun AktivitasFisikScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Zona 2: Aktivitas Fisik", fontWeight = FontWeight.Bold) }, colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard))
+            TopAppBar(title = { Text("Zona 2: Aktivitas Fisik", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard),
+                // --- 1. TAMBAHKAN TOMBOL KEMBALI DI SINI ---
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
+                    }
+                }
+            )
         },
         containerColor = offWhiteBackground
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp)) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Pilih tanggal dan berapa lama durasi olahragamu.", color = Color.Gray, fontSize = 14.sp)
+                Text("Catat jenis olahraga dan geser durasi waktumu.", color = Color.Gray, fontSize = 14.sp)
 
                 // --- PEMILIH TANGGAL ---
                 OutlinedButton(
@@ -91,6 +105,22 @@ fun AktivitasFisikScreen(
                     }
                 }
 
+                // --- INPUT NAMA AKTIVITAS ---
+                OutlinedTextField(
+                    value = namaAktivitas,
+                    onValueChange = { namaAktivitas = it },
+                    label = { Text("Jenis Aktivitas Fisik / Olahraga") },
+                    placeholder = { Text("Misal: Bermain Futsal, Jogging") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = pureWhiteCard,
+                        unfocusedContainerColor = pureWhiteCard,
+                    )
+                )
+
+                // --- SLIDER DURASI (Desain Asli Anda) ---
                 Card(
                     colors = CardDefaults.cardColors(containerColor = pureWhiteCard),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -110,17 +140,20 @@ fun AktivitasFisikScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                // --- TOMBOL SIMPAN ---
                 Button(
                     onClick = {
                         viewModel.submitAktivitasFisik(
                             token = token,
-                            tanggal = apiDateFormat.format(selectedDate), // Menggunakan tanggal pilihan
-                            durasiMenit = sliderPosition.roundToInt()
+                            tanggal = apiDateFormat.format(selectedDate),
+                            namaAktivitas = namaAktivitas.trim(), // Data Teks
+                            durasiMenit = sliderPosition.roundToInt() // Data Angka
                         )
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = !uiState.isLoading
+                    // Kunci Pintar: Tombol menyala jika teks tidak kosong dan durasi > 0
+                    enabled = !uiState.isLoading && namaAktivitas.isNotBlank() && sliderPosition.roundToInt() > 0
                 ) {
                     if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
                     else Text("Simpan Aktivitas Fisik", fontSize = 16.sp, fontWeight = FontWeight.Bold)

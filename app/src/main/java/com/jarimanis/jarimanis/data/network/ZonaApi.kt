@@ -52,4 +52,18 @@ interface ZonaApi {
         @Header("Authorization") token: String,
         @Query("tanggal") tanggal: String
     ):Response<RaporResponse>
+
+    @POST("/api/tes-kebugaran")
+    suspend fun storeTesKebugaran(
+        @Header("Authorization") token: String,
+        @Body request: TesKebugaranRequest
+    ): Response<ZonaResponse>
+
+    @GET("/api/leaderboard-fisik")
+    suspend fun getLeaderboardAktivitasFisik(
+        @Header("Authorization") token: String,
+        @Query("lingkup") lingkup: String?=null,
+        @Query("sekolah_id") sekolahId: Int? = null,
+        @Query("kelas_id") kelasId: Int? = null
+    ): Response<LeaderboardResponse>
 }

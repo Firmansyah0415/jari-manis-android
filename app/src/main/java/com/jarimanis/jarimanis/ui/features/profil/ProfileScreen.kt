@@ -91,7 +91,7 @@ fun ProfileScreen(
                 ) {
                     if (!user.fotoProfil.isNullOrEmpty()) {
                         AsyncImage(
-                            model = "${ApiClient.BASE_URL}storage/profil/${user.fotoProfil}",
+                            model = "${ApiClient.BASE_URL}profil/${user.fotoProfil}",
                             contentDescription = "Avatar",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -129,7 +129,10 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = onEditClick,
+                    onClick = {
+                        viewModel.resetState() // <--- 1. BERSIHKAN SISA STATE LOGIN
+                        onEditClick()          // <--- 2. BARU PINDAH HALAMAN
+                    },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {

@@ -17,11 +17,12 @@ data class PostTestRequest(
 data class RecallMakananRequest(
     val tanggal: String,
     @SerializedName("skor_total") val skorTotal: Int,
-    @SerializedName("detail_jawaban") val detailJawaban: Map<String, Int>? = null
+    @SerializedName("detail_jawaban") val detailJawaban: Map<String, String>? = null
 )
 
 data class AktivitasFisikRequest(
     val tanggal: String,
+    @SerializedName("nama_aktivitas") val namaAktivitas: String,
     @SerializedName("durasi_menit") val durasiMenit: Int
 )
 
@@ -44,6 +45,16 @@ data class PersonalHygieneRequest(
     @SerializedName("cuci_tangan_luar_rumah") val cuciTanganLuarRumah: Boolean
 )
 
+data class TesKebugaranRequest(
+    @SerializedName("tipe_tes") val tipeTes: String,
+    @SerializedName("tanggal") val tanggal: String,
+    @SerializedName("lari_12_menit") val lari12Menit: Float?,
+    @SerializedName("push_up") val pushUp: Int?,
+    @SerializedName("sit_up") val sitUp: Int?,
+    @SerializedName("pull_up_chining") val pullUpChining: Int?,
+    @SerializedName("shuttle_run") val shuttleRun: Float?
+)
+
 // ==========================================
 // MODEL RESPONSE (Data balasan dari API)
 // ==========================================
@@ -55,4 +66,22 @@ data class PersonalHygieneRequest(
  */
 data class ZonaResponse(
     val message: String
+)
+
+// ==========================================
+// MODEL LEADERBOARD (Baru)
+// ==========================================
+data class LeaderboardResponse(
+    val message: String,
+    val data: List<LeaderboardItem>
+)
+
+data class LeaderboardItem(
+    val peringkat: Int,
+    val id: Int,
+    val nama: String,
+    val kelas: String,
+    @SerializedName("foto_profil") val fotoProfil: String?,
+    @SerializedName("total_skor") val totalSkor: Int,
+    @SerializedName("total_menit") val totalMenit: Int
 )

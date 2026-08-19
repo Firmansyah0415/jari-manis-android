@@ -64,7 +64,7 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     // ==========================================
     // 2. FUNGSI RECALL 24 JAM
     // ==========================================
-    fun submitRecallMakanan(token: String, tanggal: String, skorTotal: Int, detailJawaban: Map<String, Int>?) {
+    fun submitRecallMakanan(token: String, tanggal: String, skorTotal: Int, detailJawaban: Map<String, String>) {
         viewModelScope.launch {
             _uiState.value = ZonaUiState(isLoading = true)
             try {
@@ -82,15 +82,18 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     // ==========================================
     // 3. FUNGSI AKTIVITAS FISIK
     // ==========================================
-    fun submitAktivitasFisik(token: String, tanggal: String, durasiMenit: Int) {
+    fun submitAktivitasFisik(token: String, tanggal: String, namaAktivitas: String, durasiMenit: Int) {
         viewModelScope.launch {
             _uiState.value = ZonaUiState(isLoading = true)
             try {
-                val request = AktivitasFisikRequest(tanggal, durasiMenit)
+                val request = AktivitasFisikRequest(tanggal, namaAktivitas, durasiMenit)
                 val response = repository.submitAktivitasFisik(token, request)
 
-                if (response.isSuccessful) _uiState.value = ZonaUiState(successMessage = response.body()?.message)
-                else _uiState.value = ZonaUiState(errorMessage = "Gagal: ${response.message()}")
+                if (response.isSuccessful) {
+                    _uiState.value = ZonaUiState(successMessage = response.body()?.message)
+                } else {
+                    _uiState.value = ZonaUiState(errorMessage = "Gagal: ${response.message()}")
+                }
             } catch (e: Exception) {
                 _uiState.value = ZonaUiState(errorMessage = "Error Jaringan: ${e.message}")
             }
@@ -143,6 +146,49 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
         _raporState.value = Resource.Loading
         viewModelScope.launch {
             _raporState.value = repository.getRapor(token, tanggal) // <--- SISIPKAN TANGGAL DI SINI
+        }
+    }
+
+    fun submitTesKebugaran(
+        token: String,
+        tipeTes: String,
+        tanggal: String, // <--- Sudah benar ada tanggal
+        lari: Float?,
+        push: Int?,
+        sit: Int?,
+        pull: Int?,
+        shuttle: Float?
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, successMessage = null)
+            try {
+                // Pastikan 'tanggal' dimasukkan sebagai parameter kedua saat membuat object request
+                val request = TesKebugaranRequest(tipeTes, tanggal, lari, push, sit, pull, shuttle)
+
+                val response = repository.submitTesKebugaran(token, request)
+
+                if (response.isSuccessful) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, successMessage = response.body()?.message ?: "Berhasil")
+                } else {
+                    _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = "Gagal: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = "Error Jaringan: ${e.message}")
+            }
+        }
+    }
+
+    // ==========================================
+    // STATE & FUNGSI LEADERBOARD AKTIVITAS FISIK
+    // ==========================================
+    private val _leaderboardState = MutableStateFlow<Resource<LeaderboardResponse>?>(null)
+    val leaderboardState: StateFlow<Resource<LeaderboardResponse>?> = _leaderboardState.asStateFlow()
+
+    // Tambahkan parameter lingkup dengan default value "sekolah"
+    fun fetchLeaderboardFisik(token: String, lingkup: String? = null, sekolahId: Int? = null, kelasId: Int? = null) {
+        _leaderboardState.value = Resource.Loading
+        viewModelScope.launch {
+            _leaderboardState.value = repository.getLeaderboardAktivitasFisik(token, lingkup, sekolahId, kelasId)
         }
     }
 }

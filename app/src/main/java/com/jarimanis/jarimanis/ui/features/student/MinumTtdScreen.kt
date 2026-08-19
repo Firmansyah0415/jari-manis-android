@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -80,7 +81,16 @@ fun MinumTtdScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Zona 3: Minum TTD", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard),
+                // --- 1. TAMBAHKAN TOMBOL KEMBALI DI SINI ---
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
+                    }
+                }
             )
         },
         containerColor = offWhiteBackground

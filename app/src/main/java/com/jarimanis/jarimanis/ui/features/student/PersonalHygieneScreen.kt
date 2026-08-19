@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -84,7 +85,19 @@ fun PersonalHygieneScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Zona 4: Personal Hygiene", fontWeight = FontWeight.Bold) }, colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard))
+            TopAppBar(
+                title = { Text("Zona 4: Personal Hygiene", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard),
+                // --- 1. TAMBAHKAN TOMBOL KEMBALI DI SINI ---
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
+                    }
+                }
+            )
         },
         containerColor = offWhiteBackground
     ) { paddingValues ->
@@ -145,7 +158,7 @@ fun PersonalHygieneScreen(
                     Button(
                         onClick = {
                             val request = PersonalHygieneRequest(
-                                tanggal = apiDateFormat.format(selectedDate), // Menggunakan tanggal pilihan
+                                tanggal = apiDateFormat.format(selectedDate),
                                 mandi2xSehari = checkedItems["mandi"] ?: false,
                                 pakaiSabun = checkedItems["sabun"] ?: false,
                                 sikatGigiPagi = checkedItems["gigi_pagi"] ?: false,
@@ -161,7 +174,9 @@ fun PersonalHygieneScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(8.dp),
-                        enabled = !uiState.isLoading
+                        // --- KODE PERBAIKAN DI SINI ---
+                        // Tombol nyala JIKA tidak loading AND minimal ada 1 checkbox bernilai 'true' (dicentang)
+                        enabled = !uiState.isLoading && checkedItems.containsValue(true)
                     ) {
                         if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
                         else Text("Simpan Personal Hygiene", fontSize = 16.sp, fontWeight = FontWeight.Bold)

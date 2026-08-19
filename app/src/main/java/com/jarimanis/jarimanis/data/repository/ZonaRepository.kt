@@ -2,11 +2,13 @@ package com.jarimanis.jarimanis.data.repository
 
 import com.jarimanis.jarimanis.data.model.RaporResponse
 import com.jarimanis.jarimanis.data.network.AktivitasFisikRequest
+import com.jarimanis.jarimanis.data.network.LeaderboardResponse
 import com.jarimanis.jarimanis.data.network.MinumTtdRequest
 import com.jarimanis.jarimanis.data.network.PersonalHygieneRequest
 import com.jarimanis.jarimanis.data.network.PostTestRequest
 import com.jarimanis.jarimanis.data.network.PreTestRequest
 import com.jarimanis.jarimanis.data.network.RecallMakananRequest
+import com.jarimanis.jarimanis.data.network.TesKebugaranRequest
 import com.jarimanis.jarimanis.data.network.ZonaApi
 import com.jarimanis.jarimanis.utils.Resource
 
@@ -52,4 +54,23 @@ class ZonaRepository(private val api: ZonaApi) {
         }
     }
 
+    // ==========================================
+    // FUNGSI TES KEBUGARAN
+    // ==========================================
+    suspend fun submitTesKebugaran(token: String, request: TesKebugaranRequest) =
+        api.storeTesKebugaran(formatToken(token), request)
+
+    // Tambahkan parameter lingkup
+    suspend fun getLeaderboardAktivitasFisik(token: String, lingkup: String? = null, sekolahId: Int? = null, kelasId: Int? = null): Resource<LeaderboardResponse> {
+        return try {
+            val response = api.getLeaderboardAktivitasFisik(formatToken(token), lingkup, sekolahId, kelasId) // <--- SISIPKAN DI SINI
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error(response.message() ?: "Gagal mengambil data leaderboard")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
+        }
+    }
 }

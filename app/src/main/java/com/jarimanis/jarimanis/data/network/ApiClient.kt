@@ -14,8 +14,11 @@ object ApiClient {
     // Ngriok
 //     private const val BASE_URL = "https://diego-beaky-unappeasably.ngrok-free.dev"
 
+    // Productin
+      const val BASE_URL = "https://navajowhite-mosquito-638614.hostingersite.com/"
+
     // Lokal tanpa Ngrok
-     const val BASE_URL = "http://172.24.93.129:8000/"
+     // const val BASE_URL = "http://10.225.208.129:8000/"
 
     // Interceptor untuk memantau lalu lintas jaringan di Logcat
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
