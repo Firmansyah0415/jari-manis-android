@@ -1,5 +1,6 @@
 package com.jarimanis.jarimanis.data.repository
 
+import com.jarimanis.jarimanis.data.model.DeleteUserRequest
 import com.jarimanis.jarimanis.data.model.KelasResponse
 import com.jarimanis.jarimanis.data.model.LoginRequest
 import com.jarimanis.jarimanis.data.model.LoginResponse
@@ -176,6 +177,21 @@ class AuthRepository(private val api: AuthApi) {
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun deleteUser(token: String, userId: Int, adminPassword: String): Resource<String> {
+        return try {
+            val response = api.deleteUser(formatToken(token), userId,
+                DeleteUserRequest(adminPassword)
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body()?.message ?: "Berhasil dihapus")
+            } else {
+                Resource.Error(parseErrorMessage(response.errorBody()))
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Terjadi kesalahan server")
         }
     }
 }

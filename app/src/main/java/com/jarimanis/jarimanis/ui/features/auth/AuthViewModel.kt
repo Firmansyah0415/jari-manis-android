@@ -21,7 +21,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
-// State untuk UI (bisa dipakai untuk Login maupun Register)
 sealed class AuthUiState {
     object Idle : AuthUiState()
     object Loading : AuthUiState()
@@ -287,6 +286,27 @@ class AuthViewModel(
         viewModelScope.launch {
             _adminUserList.value = repository.getAdminUsers(token, role, sekolahId, kelasId)
         }
+    }
+
+    // --- STATE HAPUS USER ---
+    private val _deleteUserState = MutableStateFlow<Resource<String>?>(null)
+    val deleteUserState: StateFlow<Resource<String>?> = _deleteUserState.asStateFlow()
+
+    fun deleteUser(token: String, userId: Int, adminPassword: String) {
+        _deleteUserState.value = Resource.Loading
+        viewModelScope.launch {
+            val result = repository.deleteUser(token, userId, adminPassword)
+            _deleteUserState.value = result
+
+            // Jika sukses, paksa tarik ulang data user agar langsung hilang dari layar
+            if (result is Resource.Success) {
+                // (Ini opsional, karena kita juga bisa panggil dari UI)
+            }
+        }
+    }
+
+    fun resetDeleteState() {
+        _deleteUserState.value = null
     }
 
     fun logout() {

@@ -22,3 +22,7 @@ data class UserListResponse(
     val message: String,
     val data: List<UserProfile>
 )
+
+data class DeleteUserRequest(
+    val admin_password: String
+)

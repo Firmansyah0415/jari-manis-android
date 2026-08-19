@@ -1,6 +1,7 @@
 package com.jarimanis.jarimanis.data.network
 
 import com.jarimanis.jarimanis.data.model.AdminDashboardResponse
+import com.jarimanis.jarimanis.data.model.DeleteUserRequest
 import com.jarimanis.jarimanis.data.model.KelasResponse
 import com.jarimanis.jarimanis.data.model.LoginRequest
 import com.jarimanis.jarimanis.data.model.LoginResponse
@@ -17,7 +18,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -87,4 +87,12 @@ interface AuthApi {
         @Query("sekolah_id") sekolahId: Int? = null,
         @Query("kelas_id") kelasId: Int? = null
     ): Response<UserListResponse>
+
+    // Tambahkan @HTTP untuk mengirim Body di request DELETE
+    @retrofit2.http.HTTP(method = "DELETE", path = "/api/admin/users/{id}", hasBody = true)
+    suspend fun deleteUser(
+        @Header("Authorization") token: String,
+        @Path("id") userId: Int,
+        @Body request: DeleteUserRequest
+    ): Response<LogoutResponse>
 }
