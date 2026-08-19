@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,13 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.jarimanis.jarimanis.R // Pastikan package R benar
+import com.jarimanis.jarimanis.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +35,7 @@ fun TentangAplikasiScreen(navController: NavController) {
                 title = { Text("Tentang Aplikasi", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = offWhiteBackground)
@@ -46,28 +48,22 @@ fun TentangAplikasiScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // <--- PENYELAMAT SCROLL ADA DI SINI
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // --- LOGO APLIKASI ---
-            Box(
+            // --- PERBAIKAN LOGO APLIKASI ---
+            // Kita hapus Box pembungkus dan langsung clip gambar agar bentuknya tegas
+            Image(
+                painter = painterResource(id = R.drawable.logo_jari_manis),
+                contentDescription = "Logo Aplikasi",
+                contentScale = ContentScale.Crop, // Memastikan gambar mengisi seluruh sudut yang dipotong
                 modifier = Modifier
-                    .size(120.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color.White) // Background putih untuk logo
-                    .padding(16.dp), // Padding agar logo tidak mepet
-                contentAlignment = Alignment.Center
-            ) {
-                // GANTI R.drawable.nama_file_anda DENGAN NAMA GAMBAR ANDA DI FOLDER DRAWABLE
-                // Jika belum sempat import, biarkan seperti ini agar tidak merah, lalu ganti nanti
-                Image(
-                    painter = painterResource(id = R.drawable.logo_jari_manis), // GANTI INI
-                    contentDescription = "Logo Aplikasi",
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+                    .size(120.dp) // Ukuran tetap
+                    .clip(RoundedCornerShape(32.dp)) // Membulatkan sudutnya secara mulus
+                    .background(Color.White) // Background hanya muncul jika logo transparan (PNG)
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 

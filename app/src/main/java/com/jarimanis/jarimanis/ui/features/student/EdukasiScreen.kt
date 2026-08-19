@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,22 +40,30 @@ fun EdukasiScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Modul Edukasi Kesehatan") },
+                title = { Text("Modul Edukasi Kesehatan", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        containerColor = Color(0xFFF8F9FA)
+        containerColor = Color(0xFFF8F9FA),
+        // PERBAIKAN 1: Tambahkan ini agar layar mengakomodasi UI Navigasi bawaan HP (gestur swipe bawah)
+        contentWindowInsets = WindowInsets.navigationBars
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
+            // PERBAIKAN 2: Gunakan contentPadding untuk memberikan jarak di DALAM daftar gulir
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 48.dp // Beri ruang napas yang ekstra di bagian bawah agar item terakhir bisa naik
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -71,9 +79,9 @@ fun EdukasiScreen(navController: NavController) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = MaterialTheme.shapes.medium, // Menggunakan bentuk melengkung bawaan Material 3
                     modifier = Modifier
                         .fillMaxWidth()
-                        // MENGARAHKAN KE HALAMAN DETAIL SAAT DIKLIK
                         .clickable { navController.navigate("detail_edukasi/${materi.idVideo}") }
                 ) {
                     Column {
@@ -83,7 +91,7 @@ fun EdukasiScreen(navController: NavController) {
                             contentDescription = "Thumbnail ${materi.judul}",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(16f / 9f), // Menjaga rasio gambar standar video
+                                .aspectRatio(16f / 9f),
                             contentScale = ContentScale.Crop
                         )
 
