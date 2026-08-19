@@ -6,8 +6,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -17,7 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +66,8 @@ fun DaftarUserScreen(
     LaunchedEffect(selectedTabIndex) {
         refreshData()
     }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
         topBar = {
@@ -123,7 +130,8 @@ fun DaftarUserScreen(
                                     value = selectedSekolahName,
                                     onValueChange = {}, readOnly = true,
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedSekolah) },
-                                    modifier = Modifier.menuAnchor(),
+                                    // --- PERBAIKAN MENU ANCHOR DEPRECATED ---
+                                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                                     textStyle = LocalTextStyle.current.copy(fontSize = 12.sp), singleLine = true
                                 )
                                 ExposedDropdownMenu(expanded = expandedSekolah, onDismissRequest = { expandedSekolah = false }) {
@@ -152,7 +160,8 @@ fun DaftarUserScreen(
                                     value = selectedKelasName,
                                     onValueChange = {}, readOnly = true,
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKelas) },
-                                    modifier = Modifier.menuAnchor(),
+                                    // --- PERBAIKAN MENU ANCHOR DEPRECATED ---
+                                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                                     textStyle = LocalTextStyle.current.copy(fontSize = 12.sp), enabled = selectedSekolahId != null, singleLine = true
                                 )
                                 ExposedDropdownMenu(expanded = expandedKelas, onDismissRequest = { expandedKelas = false }) {
@@ -192,12 +201,32 @@ fun DaftarUserScreen(
                     }
 
                     item {
-                        // --- SEARCH BAR BARU ---
+                        // --- SEARCH BAR BARU DENGAN TOMBOL CLEAR (X) ---
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
                             placeholder = { Text("Cari nama atau username...") },
                             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Cari") },
+                            // Menambahkan Tombol Silang (X) Jika Teks Tidak Kosong
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = {
+                                            searchQuery = "" // Hapus isi teks
+                                            keyboardController?.hide() // Turunkan keyboard
+                                        }
+                                    ) {
+                                        Icon(Icons.Filled.Clear, contentDescription = "Hapus Pencarian")
+                                    }
+                                }
+                            },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    keyboardController?.hide()
+                                }
+                            ),
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedContainerColor = Color.White,
