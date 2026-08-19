@@ -137,7 +137,7 @@ fun DetailRaporSiswaScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Lihat Progress Tanggal:", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
+                Text("Lihat Progress Zona Tanggal:", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = { datePickerDialog.show() },
@@ -186,30 +186,23 @@ fun DetailRaporSiswaScreen(
                     }
                 }
 
-                // ==========================================
-                // SECTION 1: KUESIONER PENGETAHUAN
-                // ==========================================
                 RaporSectionTitleTeacher("Pengetahuan Gizi & Kesehatan")
                 AdvancedRaporCardTeacher(title = "Pre-Test (Awal)", data = data.preTest)
                 AdvancedRaporCardTeacher(title = "Post-Test (Akhir)", data = data.postTest, isPostTest = true)
 
-                // ==========================================
-                // SECTION 2: PENGUKURAN KEBUGARAN
-                // ==========================================
                 RaporSectionTitleTeacher("Hasil Pengukuran Kebugaran")
                 AdvancedRaporCardTeacher(title = "Pre-Test Kebugaran", data = data.preTestKebugaran, isPostTest = true)
                 AdvancedRaporCardTeacher(title = "Post-Test Kebugaran", data = data.postTestKebugaran, isPostTest = true)
 
-                // ==========================================
-                // SECTION 3: ZONA AKTIVITAS HARIAN
-                // ==========================================
                 RaporSectionTitleTeacher("Aktivitas Harian (Zona)")
                 AdvancedRaporCardTeacher(title = "Recall 24 Jam", data = data.recallMakanan, isRecall = true)
                 AdvancedRaporCardTeacher(title = "Aktivitas Fisik", data = data.aktivitasFisik)
+
+                // --- PERBAIKAN LOGIKA STATUS TTD (== true) ---
                 AdvancedRaporCardTeacher(
                     title = "Minum TTD",
                     data = data.minumTtd,
-                    customStatus = if (data.minumTtd?.sudahMinum == 1) "Sudah Minum TTD" else "Belum Minum TTD"
+                    customStatus = if (data.minumTtd?.sudahMinum == true) "Sudah Minum TTD" else "Belum Minum TTD"
                 )
                 AdvancedRaporCardTeacher(title = "Personal Hygiene", data = data.personalHygiene, isHygiene = true)
 
@@ -232,7 +225,6 @@ fun RaporSectionTitleTeacher(title: String) {
     )
 }
 
-// (KODE AdvancedRaporCardTeacher TETAP SAMA PERSIS SEPERTI AdvancedRaporCard DI ATAS)
 @Composable
 fun AdvancedRaporCardTeacher(
     title: String,
@@ -330,7 +322,7 @@ fun AdvancedRaporCardTeacher(
 
             if (expanded && isDone) {
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                HorizontalDivider(Modifier, thickness = 1.dp, color = Color.LightGray.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (isRecall && data?.detailJawaban != null) {
@@ -388,10 +380,11 @@ fun AdvancedRaporCardTeacher(
                         Text("Skenario yang dilakukan:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                         hygieneList.forEach { (label, status) ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                // --- PERBAIKAN LOGIKA STATUS HYGIENE (== true) ---
                                 Icon(
-                                    imageVector = if (status == 1) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
+                                    imageVector = if (status == true) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
                                     contentDescription = null,
-                                    tint = if (status == 1) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    tint = if (status == true) Color(0xFF4CAF50) else Color(0xFFF44336),
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))

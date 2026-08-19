@@ -30,7 +30,8 @@ object EdukasiData {
     val daftarMateri = listOf(
         MateriEdukasi("MIrQJNfGKrA", "Apa itu Anemia?", "Kenali gejala dan bahaya kurang darah merah bagi remaja."),
         MateriEdukasi("JaWAXzDYeG8", "Pentingnya Tablet Tambah Darah (TTD)", "Mengapa meminum TTD sangat penting untuk menjaga konsentrasi belajar?"),
-        MateriEdukasi("3e2SZB6zzaA", "Isi Piringku & Gizi Seimbang", "Panduan mengatur porsi makan harian yang sehat dan bergizi.")
+        MateriEdukasi("3e2SZB6zzaA", "Isi Piringku & Gizi Seimbang", "Panduan mengatur porsi makan harian yang sehat dan bergizi."),
+        MateriEdukasi("2qWR_b1HE18", "MITOS DAN FAKTA SEPUTAR KESEHATAN BEROLAHRAGA!", "Benarkah olahraga tiap hari bikin sehat atau malah merusak tubuh? Di episode #suaratirta kali ini, kita bongkar berbagai mitos dan fakta seputar kesehatan berolahraga. Mulai dari porsi latihan yang pas, waktu pemulihan otot, hingga fakta medis di balik kebugaran. Jangan salah kaprah, tonton sampai habis!")
     )
 }
 

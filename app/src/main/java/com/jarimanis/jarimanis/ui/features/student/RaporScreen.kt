@@ -89,7 +89,7 @@ fun RaporScreen(viewModel: ZonaViewModel, token: String) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Pilih Tanggal Rapor:", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
+            Text("Pilih Tanggal Rapor Aktivitas Harian (Zona):", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = { datePickerDialog.show() },
@@ -156,10 +156,12 @@ fun RaporScreen(viewModel: ZonaViewModel, token: String) {
                     RaporSectionTitle("Aktivitas Harian (Zona)")
                     AdvancedRaporCard(title = "Recall 24 Jam", data = data.recallMakanan, isRecall = true)
                     AdvancedRaporCard(title = "Aktivitas Fisik", data = data.aktivitasFisik)
+
+                    // --- PERBAIKAN LOGIKA STATUS TTD (== true) ---
                     AdvancedRaporCard(
                         title = "Minum TTD",
                         data = data.minumTtd,
-                        customStatus = if (data.minumTtd?.sudahMinum == 1) "Sudah Minum TTD" else "Belum Minum TTD"
+                        customStatus = if (data.minumTtd?.sudahMinum == true) "Sudah Minum TTD" else "Belum Minum TTD"
                     )
                     AdvancedRaporCard(title = "Personal Hygiene", data = data.personalHygiene, isHygiene = true)
 
@@ -184,10 +186,6 @@ fun RaporSectionTitle(title: String) {
     )
 }
 
-// =========================================================
-// KARTU ITEM RAPOR YANG SANGAT CERDAS & FLEKSIBEL
-// =========================================================
-// (KODE AdvancedRaporCard TETAP SAMA PERSIS 100% SEPERTI MILIK ANDA)
 @Composable
 fun AdvancedRaporCard(
     title: String,
@@ -285,7 +283,7 @@ fun AdvancedRaporCard(
 
             if (expanded && isDone) {
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                HorizontalDivider(Modifier, thickness = 1.dp, color = Color.LightGray.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (isRecall && data?.detailJawaban != null) {
@@ -343,10 +341,11 @@ fun AdvancedRaporCard(
                         Text("Skenario yang dilakukan:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                         hygieneList.forEach { (label, status) ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                // --- PERBAIKAN LOGIKA STATUS HYGIENE (== true) ---
                                 Icon(
-                                    imageVector = if (status == 1) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
+                                    imageVector = if (status == true) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
                                     contentDescription = null,
-                                    tint = if (status == 1) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    tint = if (status == true) Color(0xFF4CAF50) else Color(0xFFF44336),
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))

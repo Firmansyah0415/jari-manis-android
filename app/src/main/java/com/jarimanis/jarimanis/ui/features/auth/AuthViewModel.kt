@@ -49,11 +49,11 @@ class AuthViewModel(
     }
 
     fun login(username: String, password: String) {
+        // --- PERBAIKAN PESAN LOGIN ---
         if (username.isBlank() || password.isBlank()) {
-            _uiState.value = AuthUiState.Error("Username dan Password tidak boleh kosong")
+            _uiState.value = AuthUiState.Error("Username dan password tidak boleh kosong.")
             return
         }
-
         _uiState.value = AuthUiState.Loading
 
         viewModelScope.launch {
@@ -114,15 +114,21 @@ class AuthViewModel(
         password: String,
         role: String,
         gender: String,
-        sekolahId: Int? = null, // Parameter baru
-        kelasId: Int? = null    // Parameter baru
+        sekolahId: Int? = null,
+        kelasId: Int? = null
     ) {
+        // --- PERBAIKAN PESAN REGISTER ---
         if (name.isBlank() || username.isBlank() || password.isBlank() || role.isBlank()) {
-            _uiState.value = AuthUiState.Error("Semua kolom harus diisi")
+            _uiState.value = AuthUiState.Error("Semua kolom wajib diisi.")
             return
         }
 
-        // Tambahkan validasi: Jika Siswa atau Guru, wajib pilih Sekolah & Kelas
+        // --- VALIDASI SPASI DI HP ---
+        if (username.contains(" ")) {
+            _uiState.value = AuthUiState.Error("Username tidak boleh mengandung spasi.")
+            return
+        }
+
         if ((role == "siswa" || role == "guru") && (sekolahId == null || kelasId == null)) {
             _uiState.value = AuthUiState.Error("Sekolah dan Kelas wajib dipilih!")
             return

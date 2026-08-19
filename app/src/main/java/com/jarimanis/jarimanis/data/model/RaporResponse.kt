@@ -25,7 +25,9 @@ data class RaporItem(
     val skor: Int? = null,
     @SerializedName("skor_total") val skorTotal: Int? = null,
     @SerializedName("durasi_menit") val durasiMenit: Int? = null,
-    @SerializedName("sudah_minum") val sudahMinum: Int? = null,
+
+    // --- PERBAIKAN: Diubah menjadi Boolean? ---
+    @SerializedName("sudah_minum") val sudahMinum: Boolean? = null,
     val kategori: String? = null,
 
     // --- WADAH BARU UNTUK AKTIVITAS FISIK ---
@@ -35,15 +37,15 @@ data class RaporItem(
     // Laravel akan mengirim array JSON, Gson Android akan mengubahnya jadi Map
     @SerializedName("detail_jawaban") val detailJawaban: Map<String, String>? = null,
 
-    // --- WADAH BARU UNTUK 10 SKENARIO PERSONAL HYGIENE ---
-    @SerializedName("mandi_2x_sehari") val mandi2xSehari: Int? = null,
-    @SerializedName("pakai_sabun") val pakaiSabun: Int? = null,
-    @SerializedName("sikat_gigi_pagi") val sikatGigiPagi: Int? = null,
-    @SerializedName("sikat_gigi_malam") val sikatGigiMalam: Int? = null,
-    @SerializedName("cuci_tangan_sebelum_makan") val cuciTanganSebelumMakan: Int? = null,
-    @SerializedName("cuci_tangan_setelah_bab") val cuciTanganSetelahBab: Int? = null,
-    @SerializedName("pakai_alas_kaki") val pakaiAlasKaki: Int? = null,
-    @SerializedName("pakai_pakaian_bersih") val pakaiPakaianBersih: Int? = null,
-    @SerializedName("handuk_pribadi_bersih") val handukPribadiBersih: Int? = null,
-    @SerializedName("cuci_tangan_luar_rumah") val cuciTanganLuarRumah: Int? = null
+    // --- PERBAIKAN WADAH UNTUK 10 SKENARIO PERSONAL HYGIENE: Diubah menjadi Boolean? ---
+    @SerializedName("mandi_2x_sehari") val mandi2xSehari: Boolean? = null,
+    @SerializedName("pakai_sabun") val pakaiSabun: Boolean? = null,
+    @SerializedName("sikat_gigi_pagi") val sikatGigiPagi: Boolean? = null,
+    @SerializedName("sikat_gigi_malam") val sikatGigiMalam: Boolean? = null,
+    @SerializedName("cuci_tangan_sebelum_makan") val cuciTanganSebelumMakan: Boolean? = null,
+    @SerializedName("cuci_tangan_setelah_bab") val cuciTanganSetelahBab: Boolean? = null,
+    @SerializedName("pakai_alas_kaki") val pakaiAlasKaki: Boolean? = null,
+    @SerializedName("pakai_pakaian_bersih") val pakaiPakaianBersih: Boolean? = null,
+    @SerializedName("handuk_pribadi_bersih") val handukPribadiBersih: Boolean? = null,
+    @SerializedName("cuci_tangan_luar_rumah") val cuciTanganLuarRumah: Boolean? = null
 )

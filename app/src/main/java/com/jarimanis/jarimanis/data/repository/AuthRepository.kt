@@ -16,16 +16,30 @@ class AuthRepository(private val api: AuthApi) {
         return if (token.startsWith("Bearer ")) token else "Bearer $token"
     }
 
+    // Tambahkan fungsi pembongkar JSON Error dari Laravel
+    private fun parseErrorMessage(errorBody: okhttp3.ResponseBody?): String {
+        return try {
+            val jsonObject = org.json.JSONObject(errorBody?.string() ?: "")
+            jsonObject.getString("message")
+        } catch (e: Exception) {
+            "Terjadi kesalahan pada server"
+        }
+    }
+
     suspend fun login(request: LoginRequest): Resource<LoginResponse> {
         return try {
             val response = api.loginUser(request)
             if (response.isSuccessful && response.body() != null) {
                 Resource.Success(response.body()!!)
             } else {
-                Resource.Error("Login gagal: ${response.message()}")
+                // Gunakan fungsi pembongkar di sini
+                Resource.Error(parseErrorMessage(response.errorBody()))
             }
+        } catch (e: java.io.IOException) {
+            // Error jika Wi-Fi mati / Tidak ada kuota
+            Resource.Error("Koneksi internet bermasalah. Silakan periksa jaringan Anda.")
         } catch (e: Exception) {
-            Resource.Error("Tidak dapat terhubung ke server: ${e.localizedMessage}")
+            Resource.Error("Sistem sibuk: ${e.localizedMessage}")
         }
     }
 
@@ -35,10 +49,13 @@ class AuthRepository(private val api: AuthApi) {
             if (response.isSuccessful && response.body() != null) {
                 Resource.Success(response.body()!!)
             } else {
-                Resource.Error("Registrasi gagal: ${response.message()}")
+                // Gunakan fungsi pembongkar di sini
+                Resource.Error(parseErrorMessage(response.errorBody()))
             }
+        } catch (e: java.io.IOException) {
+            Resource.Error("Koneksi internet bermasalah. Silakan periksa jaringan Anda.")
         } catch (e: Exception) {
-            Resource.Error("Tidak dapat terhubung ke server: ${e.localizedMessage}")
+            Resource.Error("Sistem sibuk: ${e.localizedMessage}")
         }
     }
 

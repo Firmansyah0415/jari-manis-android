@@ -27,14 +27,56 @@ class ZonaRepository(private val api: ZonaApi) {
     suspend fun submitRecallMakanan(token: String, request: RecallMakananRequest) =
         api.submitRecallMakanan(formatToken(token), request)
 
+    suspend fun getRecallMakanan(token: String, tanggal: String): Resource<com.jarimanis.jarimanis.data.network.RecallMakananDetailResponse> {
+        return try {
+            val response = api.getRecallMakanan(formatToken(token), tanggal)
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error(response.message() ?: "Gagal mengambil data")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun submitAktivitasFisik(token: String, request: AktivitasFisikRequest) =
         api.submitAktivitasFisik(formatToken(token), request)
+
+    suspend fun getAktivitasFisik(token: String, tanggal: String): Resource<com.jarimanis.jarimanis.data.network.AktivitasFisikDetailResponse> {
+        return try {
+            val response = api.getAktivitasFisik(formatToken(token), tanggal)
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error(response.message() ?: "Gagal mengambil data")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Koneksi bermasalah: ${e.localizedMessage}")
+        }
+    }
 
     suspend fun submitMinumTtd(token: String, request: MinumTtdRequest) =
         api.submitMinumTtd(formatToken(token), request)
 
+    suspend fun getMinumTtd(token: String, tanggal: String): Resource<com.jarimanis.jarimanis.data.network.MinumTtdDetailResponse> {
+        return try {
+            val response = api.getMinumTtd(formatToken(token), tanggal)
+            if (response.isSuccessful && response.body() != null) Resource.Success(response.body()!!)
+            else Resource.Error(response.message() ?: "Gagal")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Koneksi bermasalah") }
+    }
+
     suspend fun submitPersonalHygiene(token: String, request: PersonalHygieneRequest) =
         api.submitPersonalHygiene(formatToken(token), request)
+
+    suspend fun getPersonalHygiene(token: String, tanggal: String): Resource<com.jarimanis.jarimanis.data.network.PersonalHygieneDetailResponse> {
+        return try {
+            val response = api.getPersonalHygiene(formatToken(token), tanggal)
+            if (response.isSuccessful && response.body() != null) Resource.Success(response.body()!!)
+            else Resource.Error(response.message() ?: "Gagal")
+        } catch (e: Exception) { Resource.Error(e.message ?: "Koneksi bermasalah") }
+    }
 
     // Tambahkan di dalam class ZonaRepository
     suspend fun getRapor(token: String, tanggal: String): Resource<RaporResponse> {

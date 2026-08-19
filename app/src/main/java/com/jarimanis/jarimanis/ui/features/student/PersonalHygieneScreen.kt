@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.jarimanis.jarimanis.data.network.PersonalHygieneRequest
+import com.jarimanis.jarimanis.utils.Resource
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -49,6 +50,8 @@ fun PersonalHygieneScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val hygieneDataState by viewModel.personalHygieneData.collectAsState()
+
     val checkedItems = remember { mutableStateMapOf<String, Boolean>() }
 
     // --- STATE TANGGAL ---
@@ -71,6 +74,38 @@ fun PersonalHygieneScreen(
     val offWhiteBackground = Color(0xFFF8F9FA)
     val pureWhiteCard = Color(0xFFFFFFFF)
 
+    // FITUR DINAMIS TOMBOL
+    val isDataExists = (hygieneDataState as? Resource.Success)?.data?.data != null
+    val buttonText = if (isDataExists) "Perbarui Personal Hygiene" else "Simpan Personal Hygiene"
+
+    // FETCH & AUTO-FILL
+    LaunchedEffect(selectedDate) {
+        if (token.isNotEmpty()) viewModel.fetchPersonalHygiene(token, apiDateFormat.format(selectedDate))
+    }
+    DisposableEffect(Unit) { onDispose { viewModel.clearPersonalHygieneData() } }
+
+    LaunchedEffect(hygieneDataState) {
+        if (hygieneDataState is Resource.Success) {
+            val data = (hygieneDataState as Resource.Success).data.data
+            if (data != null) {
+                checkedItems["mandi"] = data.mandi2xSehari
+                checkedItems["sabun"] = data.pakaiSabun
+                checkedItems["gigi_pagi"] = data.sikatGigiPagi
+                checkedItems["gigi_malam"] = data.sikatGigiMalam
+                checkedItems["tangan_makan"] = data.cuciTanganSebelumMakan
+                checkedItems["tangan_bab"] = data.cuciTanganSetelahBab
+                checkedItems["alas_kaki"] = data.pakaiAlasKaki
+                checkedItems["pakaian"] = data.pakaiPakaianBersih
+                checkedItems["handuk"] = data.handukPribadiBersih
+                checkedItems["tangan_luar"] = data.cuciTanganLuarRumah
+            } else {
+                checkedItems.clear()
+            }
+        } else if (hygieneDataState is Resource.Error) {
+            checkedItems.clear()
+        }
+    }
+
     LaunchedEffect(uiState) {
         uiState.successMessage?.let { msg ->
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -88,13 +123,9 @@ fun PersonalHygieneScreen(
             TopAppBar(
                 title = { Text("Zona 4: Personal Hygiene", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard),
-                // --- 1. TAMBAHKAN TOMBOL KEMBALI DI SINI ---
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali")
                     }
                 }
             )
@@ -102,86 +133,86 @@ fun PersonalHygieneScreen(
         containerColor = offWhiteBackground
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    Text("Pilih tanggal dan centang aktivitas kebersihan dirimu.", color = Color.Gray, fontSize = 14.sp)
-                }
+            if (hygieneDataState is Resource.Loading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item { Text("Pilih tanggal dan centang aktivitas kebersihan dirimu.", color = Color.Gray, fontSize = 14.sp) }
 
-                // --- PEMILIH TANGGAL ---
-                item {
-                    OutlinedButton(
-                        onClick = { datePickerDialog.show() },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(containerColor = pureWhiteCard, contentColor = Color.DarkGray),
-                        border = BorderStroke(1.dp, Color.LightGray)
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(displayDateFormat.format(selectedDate))
-                            Icon(Icons.Default.DateRange, contentDescription = "Pilih Tanggal")
+                    // --- PEMILIH TANGGAL ---
+                    item {
+                        OutlinedButton(
+                            onClick = { datePickerDialog.show() },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(containerColor = pureWhiteCard, contentColor = Color.DarkGray),
+                            border = BorderStroke(1.dp, Color.LightGray)
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text(displayDateFormat.format(selectedDate))
+                                Icon(Icons.Default.DateRange, null)
+                            }
                         }
                     }
-                }
 
-                item {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = pureWhiteCard),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            hygieneChecklist.forEach { item ->
-                                val isChecked = checkedItems[item.key] ?: false
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().clickable { checkedItems[item.key] = !isChecked }.padding(horizontal = 16.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(checked = isChecked, onCheckedChange = { checked -> checkedItems[item.key] = checked })
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(text = item.label, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
-                                }
-                                if (item != hygieneChecklist.last()) {
-                                    Divider(color = offWhiteBackground, thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                    item {
+                        Card(colors = CardDefaults.cardColors(containerColor = pureWhiteCard), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                hygieneChecklist.forEach { item ->
+                                    val isChecked = checkedItems[item.key] ?: false
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().clickable { checkedItems[item.key] = !isChecked }.padding(horizontal = 16.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Checkbox(checked = isChecked, onCheckedChange = { checked -> checkedItems[item.key] = checked })
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(text = item.label, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
+                                    }
+                                    if (item != hygieneChecklist.last()) {
+                                        // --- PERBAIKAN DI SINI ---
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(horizontal = 16.dp),
+                                            thickness = 1.dp,
+                                            color = offWhiteBackground
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            val request = PersonalHygieneRequest(
-                                tanggal = apiDateFormat.format(selectedDate),
-                                mandi2xSehari = checkedItems["mandi"] ?: false,
-                                pakaiSabun = checkedItems["sabun"] ?: false,
-                                sikatGigiPagi = checkedItems["gigi_pagi"] ?: false,
-                                sikatGigiMalam = checkedItems["gigi_malam"] ?: false,
-                                cuciTanganSebelumMakan = checkedItems["tangan_makan"] ?: false,
-                                cuciTanganSetelahBab = checkedItems["tangan_bab"] ?: false,
-                                pakaiAlasKaki = checkedItems["alas_kaki"] ?: false,
-                                pakaiPakaianBersih = checkedItems["pakaian"] ?: false,
-                                handukPribadiBersih = checkedItems["handuk"] ?: false,
-                                cuciTanganLuarRumah = checkedItems["tangan_luar"] ?: false
-                            )
-                            viewModel.submitPersonalHygiene(token, request)
-                        },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        // --- KODE PERBAIKAN DI SINI ---
-                        // Tombol nyala JIKA tidak loading AND minimal ada 1 checkbox bernilai 'true' (dicentang)
-                        enabled = !uiState.isLoading && checkedItems.containsValue(true)
-                    ) {
-                        if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                        else Text("Simpan Personal Hygiene", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                val request = PersonalHygieneRequest(
+                                    tanggal = apiDateFormat.format(selectedDate),
+                                    mandi2xSehari = checkedItems["mandi"] ?: false,
+                                    pakaiSabun = checkedItems["sabun"] ?: false,
+                                    sikatGigiPagi = checkedItems["gigi_pagi"] ?: false,
+                                    sikatGigiMalam = checkedItems["gigi_malam"] ?: false,
+                                    cuciTanganSebelumMakan = checkedItems["tangan_makan"] ?: false,
+                                    cuciTanganSetelahBab = checkedItems["tangan_bab"] ?: false,
+                                    pakaiAlasKaki = checkedItems["alas_kaki"] ?: false,
+                                    pakaiPakaianBersih = checkedItems["pakaian"] ?: false,
+                                    handukPribadiBersih = checkedItems["handuk"] ?: false,
+                                    cuciTanganLuarRumah = checkedItems["tangan_luar"] ?: false
+                                )
+                                viewModel.submitPersonalHygiene(token, request)
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = !uiState.isLoading && checkedItems.containsValue(true)
+                        ) {
+                            if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                            else Text(buttonText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
-                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         }

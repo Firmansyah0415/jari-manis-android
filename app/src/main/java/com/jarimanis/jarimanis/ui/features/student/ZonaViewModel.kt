@@ -80,6 +80,21 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
         }
     }
 
+    // State untuk mengambil data lama Recall Makanan
+    private val _recallMakananData = MutableStateFlow<Resource<RecallMakananDetailResponse>?>(null)
+    val recallMakananData: StateFlow<Resource<RecallMakananDetailResponse>?> = _recallMakananData.asStateFlow()
+
+    fun fetchRecallMakanan(token: String, tanggal: String) {
+        _recallMakananData.value = Resource.Loading
+        viewModelScope.launch {
+            _recallMakananData.value = repository.getRecallMakanan(token, tanggal)
+        }
+    }
+
+    fun clearRecallMakananData() {
+        _recallMakananData.value = null
+    }
+
     // ==========================================
     // 3. FUNGSI AKTIVITAS FISIK
     // ==========================================
@@ -101,6 +116,21 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
         }
     }
 
+    // State untuk mengambil data lama Aktivitas Fisik
+    private val _aktivitasFisikData = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.network.AktivitasFisikDetailResponse>?>(null)
+    val aktivitasFisikData: StateFlow<Resource<com.jarimanis.jarimanis.data.network.AktivitasFisikDetailResponse>?> = _aktivitasFisikData.asStateFlow()
+
+    fun fetchAktivitasFisik(token: String, tanggal: String) {
+        _aktivitasFisikData.value = Resource.Loading
+        viewModelScope.launch {
+            _aktivitasFisikData.value = repository.getAktivitasFisik(token, tanggal)
+        }
+    }
+
+    fun clearAktivitasFisikData() {
+        _aktivitasFisikData.value = null
+    }
+
     // ==========================================
     // 4. FUNGSI MINUM TTD
     // ==========================================
@@ -118,6 +148,16 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
             }
         }
     }
+
+    // --- STATE ZONA 3 (TTD) ---
+    private val _minumTtdData = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.network.MinumTtdDetailResponse>?>(null)
+    val minumTtdData: StateFlow<Resource<com.jarimanis.jarimanis.data.network.MinumTtdDetailResponse>?> = _minumTtdData.asStateFlow()
+
+    fun fetchMinumTtd(token: String, tanggal: String) {
+        _minumTtdData.value = Resource.Loading
+        viewModelScope.launch { _minumTtdData.value = repository.getMinumTtd(token, tanggal) }
+    }
+    fun clearMinumTtdData() { _minumTtdData.value = null }
 
     // ==========================================
     // 5. FUNGSI PERSONAL HYGIENE
@@ -137,6 +177,16 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
             }
         }
     }
+
+    // --- STATE ZONA 4 (HYGIENE) ---
+    private val _personalHygieneData = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.network.PersonalHygieneDetailResponse>?>(null)
+    val personalHygieneData: StateFlow<Resource<com.jarimanis.jarimanis.data.network.PersonalHygieneDetailResponse>?> = _personalHygieneData.asStateFlow()
+
+    fun fetchPersonalHygiene(token: String, tanggal: String) {
+        _personalHygieneData.value = Resource.Loading
+        viewModelScope.launch { _personalHygieneData.value = repository.getPersonalHygiene(token, tanggal) }
+    }
+    fun clearPersonalHygieneData() { _personalHygieneData.value = null }
 
     // 1. State untuk menyimpan data rapor
     private val _raporState = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.model.RaporResponse>?>(null)
@@ -188,6 +238,11 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
         viewModelScope.launch {
             _tesKebugaranData.value = repository.getTesKebugaran(token, tipeTes)
         }
+    }
+
+    // --- TAMBAHKAN FUNGSI INI ---
+    fun clearTesKebugaranData() {
+        _tesKebugaranData.value = null
     }
 
     // ==========================================

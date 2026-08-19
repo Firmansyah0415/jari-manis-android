@@ -29,11 +29,23 @@ interface ZonaApi {
         @Body request: RecallMakananRequest
     ): Response<ZonaResponse>
 
+    @GET("/api/recall-makanan")
+    suspend fun getRecallMakanan(
+        @Header("Authorization") token: String,
+        @Query("tanggal") tanggal: String
+    ): Response<RecallMakananDetailResponse>
+
     @POST("/api/aktivitas-fisik")
     suspend fun submitAktivitasFisik(
         @Header("Authorization") token: String,
         @Body request: AktivitasFisikRequest
     ): Response<ZonaResponse>
+
+    @GET("/api/aktivitas-fisik")
+    suspend fun getAktivitasFisik(
+        @Header("Authorization") token: String,
+        @Query("tanggal") tanggal: String
+    ): Response<AktivitasFisikDetailResponse>
 
     @POST("/api/minum-ttd")
     suspend fun submitMinumTtd(
@@ -41,11 +53,23 @@ interface ZonaApi {
         @Body request: MinumTtdRequest
     ): Response<ZonaResponse>
 
+    @GET("/api/minum-ttd")
+    suspend fun getMinumTtd(
+        @Header("Authorization") token: String,
+        @Query("tanggal") tanggal: String
+    ): Response<MinumTtdDetailResponse>
+
     @POST("/api/personal-hygiene")
     suspend fun submitPersonalHygiene(
         @Header("Authorization") token: String,
         @Body request: PersonalHygieneRequest
     ): Response<ZonaResponse>
+
+    @GET("/api/personal-hygiene")
+    suspend fun getPersonalHygiene(
+        @Header("Authorization") token: String,
+        @Query("tanggal") tanggal: String
+    ): Response<PersonalHygieneDetailResponse>
 
     @GET("/api/rapor")
     suspend fun getRapor(

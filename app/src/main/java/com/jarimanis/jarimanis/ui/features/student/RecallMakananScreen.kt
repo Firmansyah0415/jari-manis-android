@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.jarimanis.jarimanis.utils.Resource
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -52,9 +54,9 @@ fun RecallMakananScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val recallDataState by viewModel.recallMakananData.collectAsState()
 
-    // STATE BARU: Menyimpan Teks jawaban (bukan true/false lagi)
-    // Jika key ada di map, berarti dicentang. Value-nya adalah teks yang diketik siswa.
+    // STATE: Menyimpan Teks jawaban
     val checkedItems = remember { mutableStateMapOf<String, String>() }
     var expandedCategory by remember { mutableStateOf<String?>(null) }
 
@@ -78,6 +80,39 @@ fun RecallMakananScreen(
     val offWhiteBackground = Color(0xFFF8F9FA)
     val pureWhiteCard = Color(0xFFFFFFFF)
 
+    // FITUR 3: Mengecek apakah ada data sebelumnya untuk mengubah teks tombol
+    val isDataExists = (recallDataState as? Resource.Success)?.data?.data != null
+    val buttonText = if (isDataExists) "Perbarui Aktivitas Makan" else "Simpan Aktivitas Makan"
+
+    // 1. Fetch data saat layar dibuka ATAU SAAT TANGGAL DIGANTI
+    LaunchedEffect(selectedDate) {
+        if (token.isNotEmpty()) {
+            viewModel.fetchRecallMakanan(token, apiDateFormat.format(selectedDate))
+        }
+    }
+
+    // 2. Bersihkan ingatan saat layar ditutup (Back)
+    DisposableEffect(Unit) {
+        onDispose { viewModel.clearRecallMakananData() }
+    }
+
+    // 3. Otomatis mengisi form jika ada data dari backend
+    LaunchedEffect(recallDataState) {
+        if (recallDataState is Resource.Success) {
+            val data = (recallDataState as Resource.Success).data.data
+            checkedItems.clear() // Bersihkan form dulu
+            if (data?.detailJawaban != null) {
+                // Masukkan data lama ke form
+                data.detailJawaban.forEach { (key, value) ->
+                    checkedItems[key] = value
+                }
+            }
+        } else if (recallDataState is Resource.Error) {
+            checkedItems.clear()
+        }
+    }
+
+    // Pantau balasan simpan data
     LaunchedEffect(uiState) {
         uiState.successMessage?.let { msg ->
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -95,104 +130,131 @@ fun RecallMakananScreen(
             TopAppBar(
                 title = { Text("Zona 1: Recall 24 Jam", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = pureWhiteCard),
-                // --- 1. TAMBAHKAN TOMBOL KEMBALI DI SINI ---
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali")
                     }
                 }
             )
         },
         containerColor = offWhiteBackground
+        // FITUR 1: Hapus contentWindowInsets di sini agar tidak bentrok (double push)
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    Text("Pilih tanggal dan centang makanan yang kamu konsumsi, lalu ketik nama makanannya.", color = Color.Gray, fontSize = 14.sp)
-                }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (recallDataState is Resource.Loading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .imePadding() // FITUR 1: Taruh imePadding DI SINI agar list-nya menyusut dengan cerdas
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Text("Pilih tanggal dan centang makanan yang kamu konsumsi, lalu ketik nama makanannya.", color = Color.Gray, fontSize = 14.sp)
+                    }
 
-                // --- PEMILIH TANGGAL ---
-                item {
-                    OutlinedButton(
-                        onClick = { datePickerDialog.show() },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(containerColor = pureWhiteCard, contentColor = Color.DarkGray),
-                        border = BorderStroke(1.dp, Color.LightGray)
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(displayDateFormat.format(selectedDate))
-                            Icon(Icons.Default.DateRange, contentDescription = "Pilih Tanggal")
+                    // --- PEMILIH TANGGAL ---
+                    item {
+                        OutlinedButton(
+                            onClick = { datePickerDialog.show() },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(containerColor = pureWhiteCard, contentColor = Color.DarkGray),
+                            border = BorderStroke(1.dp, Color.LightGray)
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text(displayDateFormat.format(selectedDate), fontWeight = FontWeight.Bold)
+                                Icon(Icons.Default.DateRange, contentDescription = "Pilih Tanggal")
+                            }
                         }
                     }
-                }
 
-                items(recallMeals) { category ->
-                    val isExpanded = expandedCategory == category.title
-                    Card(
-                        onClick = { expandedCategory = if (isExpanded) null else category.title },
-                        colors = CardDefaults.cardColors(containerColor = pureWhiteCard),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = category.title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                                Icon(imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, contentDescription = "Expand", tint = Color.Gray)
-                            }
-                            AnimatedVisibility(visible = isExpanded) {
-                                Column(modifier = Modifier.padding(top = 12.dp)) {
-                                    Divider(color = offWhiteBackground, thickness = 1.dp)
-                                    Spacer(modifier = Modifier.height(8.dp))
+                    items(recallMeals) { category ->
+                        val isExpanded = expandedCategory == category.title
 
-                                    category.items.forEach { foodItem ->
-                                        val stateKey = "${category.title}_$foodItem"
-                                        val isChecked = checkedItems.containsKey(stateKey)
+                        // FITUR 2: Menghitung jumlah item yang terisi (dicentang DAN diketik)
+                        val filledCount = category.items.count { foodItem ->
+                            val stateKey = "${category.title}_$foodItem"
+                            checkedItems.containsKey(stateKey) && checkedItems[stateKey]?.isNotBlank() == true
+                        }
+                        // Gabungkan menjadi teks (Contoh: "3/6 Makan Pagi")
+                        val titleWithCounter = "$filledCount/${category.items.size} ${category.title}"
 
-                                        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                                            // BARIS CHECKBOX
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Checkbox(
-                                                    checked = isChecked,
-                                                    onCheckedChange = { checked ->
-                                                        if (checked) {
-                                                            checkedItems[stateKey] = "" // Tambahkan dengan teks kosong
-                                                        } else {
-                                                            checkedItems.remove(stateKey) // Hapus jika batal centang
+                        Card(
+                            onClick = { expandedCategory = if (isExpanded) null else category.title },
+                            colors = CardDefaults.cardColors(containerColor = pureWhiteCard),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = titleWithCounter, // Menggunakan teks dinamis
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 16.sp,
+                                        // Ubah warna menjadi hijau/primer jika sudah terisi penuh
+                                        color = if (filledCount == category.items.size) MaterialTheme.colorScheme.primary else Color.Black
+                                    )
+                                    Icon(imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, contentDescription = "Expand", tint = Color.Gray)
+                                }
+                                AnimatedVisibility(visible = isExpanded) {
+                                    Column(modifier = Modifier.padding(top = 12.dp)) {
+                                        HorizontalDivider(
+                                            Modifier,
+                                            thickness = 1.dp,
+                                            color = offWhiteBackground
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        category.items.forEach { foodItem ->
+                                            val stateKey = "${category.title}_$foodItem"
+                                            val isChecked = checkedItems.containsKey(stateKey)
+
+                                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                                // BARIS CHECKBOX
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Checkbox(
+                                                        checked = isChecked,
+                                                        onCheckedChange = { checked ->
+                                                            if (checked) {
+                                                                checkedItems[stateKey] = ""
+                                                            } else {
+                                                                checkedItems.remove(stateKey)
+                                                            }
                                                         }
-                                                    }
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(text = foodItem, fontSize = 14.sp, color = Color.DarkGray)
-                                            }
-
-                                            // KOTAK TEKS (Hanya Muncul Jika Dicentang)
-                                            AnimatedVisibility(
-                                                visible = isChecked,
-                                                enter = expandVertically(),
-                                                exit = shrinkVertically()
-                                            ) {
-                                                OutlinedTextField(
-                                                    value = checkedItems[stateKey] ?: "",
-                                                    onValueChange = { newValue ->
-                                                        checkedItems[stateKey] = newValue // Update teks ketikan
-                                                    },
-                                                    modifier = Modifier.fillMaxWidth().padding(start = 48.dp, end = 8.dp, bottom = 8.dp),
-                                                    singleLine = true,
-                                                    textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
-                                                    colors = OutlinedTextFieldDefaults.colors(
-                                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                                        unfocusedBorderColor = Color.LightGray
                                                     )
-                                                )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(text = foodItem, fontSize = 14.sp, color = Color.DarkGray)
+                                                }
+
+                                                // KOTAK TEKS (Hanya Muncul Jika Dicentang)
+                                                AnimatedVisibility(
+                                                    visible = isChecked,
+                                                    enter = expandVertically(),
+                                                    exit = shrinkVertically()
+                                                ) {
+                                                    OutlinedTextField(
+                                                        value = checkedItems[stateKey] ?: "",
+                                                        onValueChange = { newValue ->
+                                                            checkedItems[stateKey] = newValue
+                                                        },
+                                                        modifier = Modifier.fillMaxWidth().padding(start = 48.dp, end = 8.dp, bottom = 8.dp),
+                                                        singleLine = true,
+                                                        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
+                                                        colors = OutlinedTextFieldDefaults.colors(
+                                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                                            unfocusedBorderColor = Color.LightGray
+                                                        )
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -200,35 +262,33 @@ fun RecallMakananScreen(
                             }
                         }
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            val validItems = checkedItems.filterValues { it.isNotBlank() }
-                            val skorTotal = validItems.size * 5
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                val validItems = checkedItems.filterValues { it.isNotBlank() }
+                                val skorTotal = validItems.size * 5
 
-                            viewModel.submitRecallMakanan(
-                                token = token,
-                                tanggal = apiDateFormat.format(selectedDate),
-                                skorTotal = skorTotal,
-                                detailJawaban = validItems
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        // --- KODE PERBAIKAN DI SINI ---
-                        // Tombol nyala JIKA tidak loading AND minimal ada 1 kotak dicentang AND semua yang dicentang teksnya sudah diketik
-                        enabled = !uiState.isLoading && checkedItems.isNotEmpty() && checkedItems.values.all { it.isNotBlank() }
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                        } else {
-                            Text("Simpan Aktivitas Makan", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                viewModel.submitRecallMakanan(
+                                    token = token,
+                                    tanggal = apiDateFormat.format(selectedDate),
+                                    skorTotal = skorTotal,
+                                    detailJawaban = validItems
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = !uiState.isLoading && checkedItems.isNotEmpty() && checkedItems.values.all { it.isNotBlank() }
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                            } else {
+                                // FITUR 3: Menggunakan teks dinamis Simpan / Perbarui
+                                Text(buttonText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         }

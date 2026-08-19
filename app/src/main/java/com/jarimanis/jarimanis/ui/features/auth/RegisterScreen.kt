@@ -179,8 +179,8 @@ fun RegisterScreen(
                     Button(
                         onClick = { viewModel.register(name, username, password, selectedRole, gender, selectedSekolah?.id, selectedKelas?.id) },
                         modifier = Modifier.fillMaxWidth().height(56.dp), shape = Shapes.medium,
-                        // --- INI KUNCI VALIDASINYA (TIDAK BISA KLIK SEBELUM SEMUA SYARAT TERPENUHI) ---
-                        enabled = uiState !is AuthUiState.Loading && password.length >= 8 && password == confirmPassword,
+                        // --- KUNCI VALIDASI TOMBOL MATI JIKA ERROR ---
+                        enabled = uiState !is AuthUiState.Loading && password.length >= 8 && password == confirmPassword && !username.contains(" "),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         if (uiState is AuthUiState.Loading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))

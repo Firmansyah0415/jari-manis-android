@@ -9,6 +9,13 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <!-- Izin memunculkan Notifikasi (Untuk Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Izin mengatur alarm tepat waktu (Untuk Android 12+) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Izin menyalakan alarm otomatis saat HP baru dihidupkan ulang -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <!-- configChanges DIHAPUS DARI SINI -->
     <application
         android:allowBackup="true"
@@ -34,6 +41,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Mendaftarkan Penjaga Malam kita ke sistem Android -->
+        <receiver android:name=".utils.TtdAlarmReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

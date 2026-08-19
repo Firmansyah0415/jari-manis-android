@@ -282,7 +282,7 @@ fun TesKebugaranCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text("Pengukuran Kebugaran", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("Ukur kondisi fisikmu secara berkala", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text("Ukur kondisi fisikmu sebelum dan sesudah program", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 }
             }
 
@@ -335,9 +335,13 @@ fun TesKebugaranCard(
 
 @Composable
 fun PostTestCard(totalHariAktif: Int, isPostTestDone: Boolean, onClick: () -> Unit) {
-    val isUnlocked = totalHariAktif >= 5
-    val progress = (totalHariAktif / 5f).coerceIn(0f, 1f)
-    val sisaHari = if (5 - totalHariAktif > 0) 5 - totalHariAktif else 0
+    // 1. Ubah syarat hari menjadi 14 hari (2 minggu)
+    val targetHari = 14
+    val isUnlocked = totalHariAktif >= targetHari
+
+    // 2. Sesuaikan pembagi progress menjadi 14f
+    val progress = (totalHariAktif / targetHari.toFloat()).coerceIn(0f, 1f)
+    val sisaHari = if (targetHari - totalHariAktif > 0) targetHari - totalHariAktif else 0
 
     Card(
         colors = CardDefaults.cardColors(
@@ -365,7 +369,8 @@ fun PostTestCard(totalHariAktif: Int, isPostTestDone: Boolean, onClick: () -> Un
                     Text("Evaluasi Akhir Kuesioner", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
                     if (!isUnlocked) {
-                        Text("Misi Harian: $totalHariAktif/5 Selesai", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
+                        // 3. Ubah teks target progress hari
+                        Text("Misi Harian: $totalHariAktif/$targetHari Selesai", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
                     } else if (isPostTestDone) {
                         Text("Misi Final Selesai! Terima kasih.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                     } else {

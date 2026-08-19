@@ -76,6 +76,13 @@ fun TesKebugaranScreen(
         }
     }
 
+    // --- PERBAIKAN 1: Bersihkan state ViewModel saat layar ini ditutup (Back) ---
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearTesKebugaranData()
+        }
+    }
+
     // Mengisi form otomatis jika data lama ditemukan
     LaunchedEffect(tesDataState) {
         if (tesDataState is Resource.Success) {
@@ -107,6 +114,15 @@ fun TesKebugaranScreen(
                         if (d % 1.0f == 0f) d.toInt().toString() else d.toString()
                     } else ""
                 }
+            } else {
+                // --- PERBAIKAN 2: Jika data API null (belum pernah diisi), kosongkan semua input ---
+                lariInput = ""
+                pushUpInput = ""
+                sitUpInput = ""
+                pullUpInput = ""
+                shuttleMenitInput = ""
+                shuttleDetikInput = ""
+                selectedDate = Calendar.getInstance().time
             }
         }
     }
@@ -224,7 +240,6 @@ fun TesKebugaranScreen(
 
                 Button(
                     onClick = {
-                        // Matematika penggabungan menit dan detik menjadi Total Detik untuk backend
                         val m = shuttleMenitInput.toFloatOrNull() ?: 0f
                         val d = shuttleDetikInput.toFloatOrNull() ?: 0f
                         val totalShuttleSeconds = (m * 60) + d
