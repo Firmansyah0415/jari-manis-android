@@ -9,9 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.jarimanis.jarimanis.utils.Resource // Untuk memakai Resource.Loading
+import com.jarimanis.jarimanis.utils.Resource
 
-// State untuk memantau status pengiriman API
 data class ZonaUiState(
     val isLoading: Boolean = false,
     val successMessage: String? = null,
@@ -117,8 +116,8 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     }
 
     // State untuk mengambil data lama Aktivitas Fisik
-    private val _aktivitasFisikData = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.network.AktivitasFisikDetailResponse>?>(null)
-    val aktivitasFisikData: StateFlow<Resource<com.jarimanis.jarimanis.data.network.AktivitasFisikDetailResponse>?> = _aktivitasFisikData.asStateFlow()
+    private val _aktivitasFisikData = MutableStateFlow<Resource<AktivitasFisikDetailResponse>?>(null)
+    val aktivitasFisikData: StateFlow<Resource<AktivitasFisikDetailResponse>?> = _aktivitasFisikData.asStateFlow()
 
     fun fetchAktivitasFisik(token: String, tanggal: String) {
         _aktivitasFisikData.value = Resource.Loading
@@ -150,8 +149,8 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     }
 
     // --- STATE ZONA 3 (TTD) ---
-    private val _minumTtdData = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.network.MinumTtdDetailResponse>?>(null)
-    val minumTtdData: StateFlow<Resource<com.jarimanis.jarimanis.data.network.MinumTtdDetailResponse>?> = _minumTtdData.asStateFlow()
+    private val _minumTtdData = MutableStateFlow<Resource<MinumTtdDetailResponse>?>(null)
+    val minumTtdData: StateFlow<Resource<MinumTtdDetailResponse>?> = _minumTtdData.asStateFlow()
 
     fun fetchMinumTtd(token: String, tanggal: String) {
         _minumTtdData.value = Resource.Loading
@@ -179,20 +178,16 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     }
 
     // --- STATE ZONA 4 (HYGIENE) ---
-    private val _personalHygieneData = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.network.PersonalHygieneDetailResponse>?>(null)
-    val personalHygieneData: StateFlow<Resource<com.jarimanis.jarimanis.data.network.PersonalHygieneDetailResponse>?> = _personalHygieneData.asStateFlow()
+    private val _personalHygieneData = MutableStateFlow<Resource<PersonalHygieneDetailResponse>?>(null)
+    val personalHygieneData: StateFlow<Resource<PersonalHygieneDetailResponse>?> = _personalHygieneData.asStateFlow()
 
     fun fetchPersonalHygiene(token: String, tanggal: String) {
         _personalHygieneData.value = Resource.Loading
         viewModelScope.launch { _personalHygieneData.value = repository.getPersonalHygiene(token, tanggal) }
     }
     fun clearPersonalHygieneData() { _personalHygieneData.value = null }
-
-    // 1. State untuk menyimpan data rapor
     private val _raporState = MutableStateFlow<Resource<com.jarimanis.jarimanis.data.model.RaporResponse>?>(null)
     val raporState: StateFlow<Resource<com.jarimanis.jarimanis.data.model.RaporResponse>?> = _raporState.asStateFlow()
-
-    // 2. Fungsi untuk mengambil data rapor dari backend dengan filter tanggal
     fun fetchRapor(token: String, tanggal: String) {
         _raporState.value = Resource.Loading
         viewModelScope.launch {
@@ -203,7 +198,7 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     fun submitTesKebugaran(
         token: String,
         tipeTes: String,
-        tanggal: String, // <--- Sudah benar ada tanggal
+        tanggal: String,
         lari: Float?,
         push: Int?,
         sit: Int?,
@@ -250,8 +245,6 @@ class ZonaViewModel(private val repository: ZonaRepository) : ViewModel() {
     // ==========================================
     private val _leaderboardState = MutableStateFlow<Resource<LeaderboardResponse>?>(null)
     val leaderboardState: StateFlow<Resource<LeaderboardResponse>?> = _leaderboardState.asStateFlow()
-
-    // Tambahkan parameter lingkup dengan default value "sekolah"
     fun fetchLeaderboardFisik(token: String, lingkup: String? = null, sekolahId: Int? = null, kelasId: Int? = null) {
         _leaderboardState.value = Resource.Loading
         viewModelScope.launch {

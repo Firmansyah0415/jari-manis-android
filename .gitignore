@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Mengabaikan file APK dan hasil build manual
+app/release/
+*.apk
+*.aab
